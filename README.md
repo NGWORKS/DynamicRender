@@ -56,33 +56,8 @@ loop.run_until_complete(Render.ReneringManage())
 **`头部信息`、`文字部分`、`功能块`（图片动态的图片、视频的视频等）、`附加卡片`（相关游戏、直播预约等）、`转发信息`（转发内容）**
 每部分根据动态的内容渲染，如果**没有该部分则不渲染**。
 每个模块渲染是**异步**的，其关系您可以根据下图理解：
-```gantt
-    datEFormat YY-MM-DD
-    title 渲染流程
-    section 头部信息
-    整理数据:active, a1,2021-07-16,5h
-    下载挂件:after a1,22h
-    下载头像:after a1, 1d
-    排版处理输出:active,2h
-    排版处理输出:active,,after c2,7h
+<div align=center> <img src="./1.png" width = 150%/> </div>
 
-    section 文字部分
-    整理数据:active,b1,after a1,5h
-    下载表情包1:15h
-    下载表情包2:b2,after b1,1d
-    排版处理输出:active,b3,after b2,10h
-
-    section 功能块
-    整理数据:active,c1,after b1,5h
-    下载图片1:15h
-    下载图片2:after c1,16h
-    排版处理输出:active,3h
-    排版处理输出:active,c2,after b3,7h
-
-    section 附加卡片
-    整理数据:active,d1,after c1,5h
-    排版处理输出:active,8h
-```
 此图仅供参考，在使用过程中有诸多因素会影响渲染的流程。
 
 > **附加卡片**通常不会下载图片，除了卡片展示游戏相关时。
@@ -94,27 +69,8 @@ loop.run_until_complete(Render.ReneringManage())
 ## 2、文字部分
 该部分是本项目的核心模块，主要实现了将动态文字进行富文本化。实现是在`DynamicRender.py`中的`DynamicPictureRendering`类中的`NGSSTrcker`方法。
 为了方便您更好对这个理解这个模块的运作方式，下图介绍了该模块的工作细节：
-```mermaid
-graph LR
-    A[数据整理]-->B[display中提取信息]
-    B--->艾特,抽奖,投票分割--> C[division]
-    B -->原生表情包分割 -->C
-    B -->话题,活动分割 -->C
-    B -->超链接分割 -->C
-    C -->根据分割起点排列-->D[NGSS]
+<div align=center> <img src="./2.png" width = 150%/> </div>
 
-```
-```mermaid
-graph LR
-D[NGSS] -->NGSS分割文字 -->E[RenderList]
-E -->逐字生成字符样式--> F[rl]
-E -->匹配原生表情包图片--> G[rl]
-E -->匹配特殊功能图片--> H[tl]
-
-F -->I[渲染输出]
-G -->下载-->I
-H -->I
-```
 `NGSS`识别了特殊文本的样式，和在字符串中的位置，是后续文本处理的指导性数据。
 `RenderList`包含了以特殊文本为分隔符的所有文本信息。
 `rl` 包含了以`字符`为单位的文本渲染信息。
