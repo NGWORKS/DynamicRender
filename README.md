@@ -71,11 +71,11 @@ loop.run_until_complete(Render.ReneringManage())
 为了方便您更好对这个理解这个模块的运作方式，下图介绍了该模块的工作细节：
 <div align=center> <img src="https://data.ngworks.cn/github/2.png" width = 150%/> </div>
 
-`NGSS`识别了特殊文本的样式，和在字符串中的位置，是后续文本处理的指导性数据。
-`RenderList`包含了以特殊文本为分隔符的所有文本信息。
-`rl` 包含了以`字符`为单位的文本渲染信息。
-`pl` 包含了以`bilibili表情包`为单位的渲染信息。
-`tl` 包含了以`特殊功能图片`的渲染信息，如动态抽奖前的小礼物，投票的柱状图，网页链接的链接图标。
+* `NGSS`识别了特殊文本的样式，和在字符串中的位置，是后续文本处理的指导性数据。
+* `RenderList`包含了以特殊文本为分隔符的所有文本信息。
+* `rl` 包含了以`字符`为单位的文本渲染信息。
+* `pl` 包含了以`bilibili表情包`为单位的渲染信息。
+* `tl` 包含了以`特殊功能图片`的渲染信息，如动态抽奖前的小礼物，投票的柱状图，网页链接的链接图标。
 
 ## 3、功能块
 这个模块的实现是在`DynamicRender.py`中的`DynamicPictureRendering`类中的`FunctionBlock`方法。
