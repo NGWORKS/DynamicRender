@@ -90,9 +90,14 @@ loop.run_until_complete(Render.ReneringManage())
 渲染源动态内容，原理与总动态基本一致，差别仅在字体颜色和对于头部信息渲染的省略。
 这个模块调用了上述除过`头部信息`以外的三个模块。
 
-# 三、贡献&license
+# 三、贡献 - 特别感谢 - license
 ## 1、贡献
 如果您发现了更好的使用方法，不妨分享出来！你可以使用pr功能提交请求，我会审阅。或者在使用中出现了什么问题，都可以提交issue，或者加入我们的`外联群（QQ:781665797）`交流。
 
-## 2、license
+## 2、特别感谢
+- [`bilibili-API-collect`](https://github.com/SocialSisterYi/bilibili-API-collect)：非常详细的 B站 api 文档
+- [`HarukaBot`](https://github.com/SK-415/HarukaBot)：非常nb的机器人
+
+## 3、license
 license: MIT.
+
