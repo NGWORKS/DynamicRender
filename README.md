@@ -1,6 +1,8 @@
 # 几乎一致的动态样式渲染！
 <div align=center> <img src="https://data.ngworks.cn/github/bnner.png" width = 50%/> </div>
 
+形象担当：[@禾咕咕](https://space.bilibili.com/254397112 )
+
 ## 一、项目介绍
 ### 1、基本功能
 本项目实现了将哔哩哔哩返回的数据渲染为类似与B站APP官方的分享图片。
