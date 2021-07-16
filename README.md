@@ -56,8 +56,7 @@ loop.run_until_complete(Render.ReneringManage())
 **`头部信息`、`文字部分`、`功能块`（图片动态的图片、视频的视频等）、`附加卡片`（相关游戏、直播预约等）、`转发信息`（转发内容）**
 每部分根据动态的内容渲染，如果**没有该部分则不渲染**。
 每个模块渲染是**异步**的，其关系您可以根据下图理解：
-```mermaid
-gantt
+```gantt
     datEFormat YY-MM-DD
     title 渲染流程
     section 头部信息
