@@ -15,6 +15,7 @@
 ### 3、依赖
 |  Package  |  Version  |
 |-----------|   ------  |
+|Pillow     |      8.0.1|
 |aiohttp    |    3.7.2  |
 |qrcode     |    6.1    |
 |pydantic   |    1.7.3  |
