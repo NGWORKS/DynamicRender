@@ -1,4 +1,4 @@
-# 基于PIL的哔哩哔哩动态分享图片的渲染
+# 几乎一致的动态样式渲染！
 <div align=center> <img src="https://data.ngworks.cn/github/bnner.png" width = 50%/> </div>
 
 ## 一、项目介绍
