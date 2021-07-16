@@ -1,11 +1,11 @@
 # 基于PIL的哔哩哔哩动态分享图片的渲染
-<div align=center> <img src=""https://data.ngworks.cn/github/bnner.png" width = 50%/> </div>
+<div align=center> <img src="https://data.ngworks.cn/github/bnner.png" width = 50%/> </div>
 
 ## 一、项目介绍
 ### 1、基本功能
 本项目实现了将哔哩哔哩返回的数据渲染为类似与B站APP官方的分享图片。
 如下图所示：
-<div align=center> <img src=""https://data.ngworks.cn/github/t.jpg" width = 30%/> </div>
+<div align=center> <img src="https://data.ngworks.cn/github/t.jpg" width = 30%/> </div>
 
 ### 2、环境
 本项目基于**Python3.9.0**开发，**在其他版本的运行状态未知**。本项目使用2021年7月的哔哩哔哩API接口，**不保证**后续接口与数据结构不会发生变化。
@@ -56,7 +56,7 @@ loop.run_until_complete(Render.ReneringManage())
 **`头部信息`、`文字部分`、`功能块`（图片动态的图片、视频的视频等）、`附加卡片`（相关游戏、直播预约等）、`转发信息`（转发内容）**
 每部分根据动态的内容渲染，如果**没有该部分则不渲染**。
 每个模块渲染是**异步**的，其关系您可以根据下图理解：
-<div align=center> <img src=""https://data.ngworks.cn/github/1.png" width = 150%/> </div>
+<div align=center> <img src="https://data.ngworks.cn/github/1.png" width = 150%/> </div>
 
 此图仅供参考，在使用过程中有诸多因素会影响渲染的流程。
 
@@ -69,7 +69,7 @@ loop.run_until_complete(Render.ReneringManage())
 ## 2、文字部分
 该部分是本项目的核心模块，主要实现了将动态文字进行富文本化。实现是在`DynamicRender.py`中的`DynamicPictureRendering`类中的`NGSSTrcker`方法。
 为了方便您更好对这个理解这个模块的运作方式，下图介绍了该模块的工作细节：
-<div align=center> <img src=""https://data.ngworks.cn/github/2.png" width = 150%/> </div>
+<div align=center> <img src="https://data.ngworks.cn/github/2.png" width = 150%/> </div>
 
 `NGSS`识别了特殊文本的样式，和在字符串中的位置，是后续文本处理的指导性数据。
 `RenderList`包含了以特殊文本为分隔符的所有文本信息。
