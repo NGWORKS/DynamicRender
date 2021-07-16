@@ -1248,7 +1248,7 @@ data = {
             "info": {
                 "uid": 25876945,
                 "uname": "极客湾Geekerwan",
-                "1face": "https://i1.hdslb.com/bfs/face/d0f7a7ee34a4a45c8390eb3a07e4d7f2d70bae91.jpg"
+                "face": "https://i1.hdslb.com/bfs/face/d0f7a7ee34a4a45c8390eb3a07e4d7f2d70bae91.jpg"
             },
             "card": {
                 "official_verify": {
