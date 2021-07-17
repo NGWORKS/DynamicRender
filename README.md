@@ -66,8 +66,12 @@ pip install bilibili-dynamic
 ```
 ### (2)、自行构建
 TODO
-### (3)、下载已经构建好的包
-TODO
+### (3)、使用releases中的版本
+请您前往[releases](https://github.com/NGWORKS/DynamicRender/releases/)页面，自行下载后缀名为`.whl`的文件，并牢记文件名称。然后使用：
+```
+pip install 下载下来的文件名称
+```
+
 ## 2、使用
 * 传入 API返回数据中的`data`下的`card` 或与结构之一样的数据。
 ```python
