@@ -1,6 +1,6 @@
 # 几乎一致的动态样式渲染！
 <div align=center> 
-    <img src="https://data.ngworks.cn/github/b2.jpg"/>
+    <img src="https://data.ngworks.cn/github/b3.jpg"/>
 </div>
 
 ## 一、项目介绍
