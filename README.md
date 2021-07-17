@@ -1,15 +1,25 @@
 # 几乎一致的动态样式渲染！
-<div align=center> <img src="https://data.ngworks.cn/github/bnner.png" width = 50%/> </div>
-
-形象担当：[@禾咕咕](https://space.bilibili.com/254397112 )
-
+<div align=center> 
+    <img src="https://data.ngworks.cn/github/b2.jpg"/>
+</div>
 ## 一、项目介绍
 ### 1、介绍
+形象担当：[@禾咕咕](https://space.bilibili.com/254397112 )
+
 
 ### 2、基本功能
 本项目实现了将哔哩哔哩返回的数据渲染为类似与B站APP官方的分享图片。
 如下图所示：
-<div align=center> <img src="https://data.ngworks.cn/github/t.jpg" width = 30%/> </div>
+<center>
+    <figure>
+        <img src="https://data.ngworks.cn/github/t.jpg" width = 30% />
+        <img src="https://data.ngworks.cn/github/t2.jpg" width = 35% />
+    </figure>
+    <figure>
+        <img src="https://data.ngworks.cn/github/t3.jpg" width = 35% />
+        <img src="https://data.ngworks.cn/github/t6.jpg" width = 25% />
+    </figure>
+</center>
 
 ### 3、环境
 本项目基于**Python3.9.0**开发，**在其他版本的运行状态未知**。本项目使用2021年7月的哔哩哔哩API接口，**不保证**后续接口与数据结构不会发生变化。
