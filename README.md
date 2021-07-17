@@ -58,7 +58,25 @@
 外联群QQ:781665797
 
 # 二、使用
-## 1、
+## 1、安装
+### (1)、pip安装(推荐）
+您可以使用pip快速的安装
+```
+pip install bilibili-dynamic
+```
+### (2)、自行构建
+略
+## 2、使用
+* 传入 API返回数据中的`data`下的`card` 或与结构之一样的数据。
+```python
+from BiliBili_dynamic import DynamicRender
+import asyncio
+# data 是上述数据，tmp_path是缓存路径，默认为工作路径下的 tmp目录，您也可以自行指定。
+Render = DynamicRender.DynamicPictureRendering(data,tmp_path =r"tmp")
+loop = asyncio.get_event_loop()
+loop.run_until_complete(Render.ReneringManage())
+Render.ReprenderIMG.show()
+```
 
 # 三、如何工作
 我们将动态的渲染分为五大部分，每部分独立渲染：
