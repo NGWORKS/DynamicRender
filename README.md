@@ -54,23 +54,13 @@
 ├─face│                    头像缓存
 ├─pendant|                 头像挂件缓存
 ```
-### 6、使用
-在使用前您需要准备API返回数据中的`data`下的`card`。并且用pydantic验证，然后用这个数据实例化`DynamicRender.py`中的`DynamicPictureRendering`类，然后调用`ReneringManage`方法，即可在实例化后的`DynamicPictureRendering`类中的`ReprenderIMG`属性获得渲染后的图片。
-> 提示：关于返回数据结构细节，您可以自行审阅代码或观察API返回的数据。
-
-```python
-data = {"一些数据":"..."}
-# DynamicCard 这个类存在于 DynamicRender.py 文件中，您可以直接调用
-data = DynamicCard(**data)
-Render = DynamicPictureRendering(data)
-loop = asyncio.get_event_loop()
-loop.run_until_complete(Render.ReneringManage())
-
-```
-### 7、交流
+### 6、交流
 外联群QQ:781665797
 
-# 二、如何工作
+# 二、使用
+## 1、
+
+# 三、如何工作
 我们将动态的渲染分为五大部分，每部分独立渲染：
 
 **`头部信息`、`文字部分`、`功能块`（图片动态的图片、视频的视频等）、`附加卡片`（相关游戏、直播预约等）、`转发信息`（转发内容）**
@@ -112,7 +102,7 @@ loop.run_until_complete(Render.ReneringManage())
 渲染源动态内容，原理与总动态基本一致，差别仅在字体颜色和对于头部信息渲染的省略。
 这个模块调用了上述除过`头部信息`以外的三个模块。
 
-# 三、贡献 - 特别感谢 - license
+# 四、贡献 - 特别感谢 - license
 ## 1、贡献
 如果您发现了更好的使用方法，不妨分享出来！你可以使用pr功能提交请求，我会审阅。或者在使用中出现了什么问题，都可以提交issue，或者加入我们的`外联群（QQ:781665797）`交流。
 
