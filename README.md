@@ -19,10 +19,10 @@
     <img src="https://data.ngworks.cn/github/t.jpg" width = 30% />
     <img src="https://data.ngworks.cn/github/t2.jpg" width = 35% />
 </div>
-<div>
+<div align=center>
     <img src="https://data.ngworks.cn/github/t3.jpg" width = 35% />
     <img src="https://data.ngworks.cn/github/t6.jpg" width = 25% />
-</div align=center>
+</div>
 
 
 ### 3、环境
