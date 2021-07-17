@@ -65,7 +65,9 @@
 pip install bilibili-dynamic
 ```
 ### (2)、自行构建
-略
+TODO
+### (3)、下载已经构建好的包
+TODO
 ## 2、使用
 * 传入 API返回数据中的`data`下的`card` 或与结构之一样的数据。
 ```python
