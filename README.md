@@ -4,15 +4,15 @@
 形象担当：[@禾咕咕](https://space.bilibili.com/254397112 )
 
 ## 一、项目介绍
-### 1、基本功能
+### 2、基本功能
 本项目实现了将哔哩哔哩返回的数据渲染为类似与B站APP官方的分享图片。
 如下图所示：
 <div align=center> <img src="https://data.ngworks.cn/github/t.jpg" width = 30%/> </div>
 
-### 2、环境
+### 3、环境
 本项目基于**Python3.9.0**开发，**在其他版本的运行状态未知**。本项目使用2021年7月的哔哩哔哩API接口，**不保证**后续接口与数据结构不会发生变化。
 
-### 3、依赖
+### 4、依赖
 |  Package  |  Version  |
 |-----------|   ------  |
 |Pillow     |      8.0.1|
@@ -24,7 +24,7 @@
 |urllib3    |    1.25.11|
 |fonttools  |    4.24.4 |
 
-### 4、项目结构
+### 5、项目结构
 本项目结构如下：
 ```
 │  CODE2000.ttf            必要的字体文件 - 辅助字体（特殊符号）
@@ -38,7 +38,7 @@
 ├─face│                    头像缓存
 ├─pendant|                 头像挂件缓存
 ```
-### 5、使用
+### 6、使用
 在使用前您需要准备API返回数据中的`data`下的`card`。并且用pydantic验证，然后用这个数据实例化`DynamicRender.py`中的`DynamicPictureRendering`类，然后调用`ReneringManage`方法，即可在实例化后的`DynamicPictureRendering`类中的`ReprenderIMG`属性获得渲染后的图片。
 > 提示：关于返回数据结构细节，您可以自行审阅代码或观察API返回的数据。
 
@@ -51,8 +51,9 @@ loop = asyncio.get_event_loop()
 loop.run_until_complete(Render.ReneringManage())
 
 ```
-### 6、交流
+### 7、交流
 外联群QQ:781665797
+
 # 二、如何工作
 我们将动态的渲染分为五大部分，每部分独立渲染：
 
