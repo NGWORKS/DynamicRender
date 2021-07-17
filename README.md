@@ -105,5 +105,5 @@ loop.run_until_complete(Render.ReneringManage())
 - [`HarukaBot`](https://github.com/SK-415/HarukaBot)：非常nb的机器人
 
 ## 3、license
-license: MIT.
+MIT.
 
