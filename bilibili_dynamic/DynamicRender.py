@@ -21,259 +21,34 @@
    >>> loop.run_until_complete(Render.ReneringManage())
    >>> Render.ReprenderIMG.show()
 
-
-
 BUG emoji不被字符计数，导致偏差。（可能占用字符数目不一样）
 
 copyright: (c) 2021 by NGWORKS.
 
 license: MIT.
 """
+# 数据验证
+from .format import DynamicCard,Dynamic,Display
+# 初始化
+from .initialize import workpath,bsepth,muniMap,euniMap,cuniMap
+from .initialize import NotoColorEmoji,NotoSansCJK,CODE2000,Unifont,fontList
+
 import os,aiohttp,asyncio, time,re, qrcode
-from typing import Optional, Union, List
-from pydantic import BaseModel, Json
 from PIL import Image, ImageFont, ImageDraw
 from urllib.parse import urlparse
 from io import BytesIO
-from fontTools.ttLib.ttFont import TTFont
-from matplotlib.font_manager import fontManager
-from pathlib import Path
-
-workpath = os.getcwd()
-bsepth = os.path.dirname(__file__) + '/'
-
-NotoSansCJK = bsepth + r'typeface/NotoSansCJKsc-Regular.otf'
-NotoColorEmoji = bsepth + r'typeface/NotoColorEmoji.ttf'
-CODE2000 = bsepth + r'typeface/CODE2000.ttf'
-Unifont = bsepth + r'typeface/Unifont.ttf.ttf'
-arial = bsepth + r'typeface/reserve/arial.ttf'
-himalaya = bsepth + r'typeface/reserve/himalaya.ttf'
-
-
-rtime = []
-mfont = TTFont(NotoSansCJK)
-muniMap = mfont['cmap'].tables[0].ttFont.getBestCmap()
-efont = TTFont(NotoColorEmoji)
-euniMap = efont['cmap'].tables[0].ttFont.getBestCmap()
-Cfont = TTFont(CODE2000)
-cuniMap = Cfont['cmap'].tables[0].ttFont.getBestCmap()
-
-tfl = [[f.fname, f.name, f.style] for f in fontManager.ttflist]
-f = fontManager.ttflist
-okf = []
-
-for f in tfl:
-    f_path = Path(f[0])
-    try:
-        if f_path.suffix not in ['.ttf', '.TTF', '.otf', '.OTF']:
-            print(f'字体{f[0]}不符合样式需求，已经排除。')
-            continue
-        oofont = TTFont(f[0])
-        oouniMap = oofont['cmap'].tables[0].ttFont.getBestCmap()
-        okf.append([oouniMap, f[0]])
-    except:
-        print(f'导入{f[0]}失败，无需处理')
-
-# 加入后备字体
-okf.append([TTFont(arial)['cmap'].tables[0].ttFont.getBestCmap(), arial])
-okf.append([TTFont(himalaya)['cmap'].tables[0].ttFont.getBestCmap(), himalaya])
-
-
-
-class info(BaseModel):
-    """用户信息"""
-    uid: Optional[int] = None
-    uname: Optional[str] = None
-    face: Optional[str] = None
-    head_url: Optional[str] = None
-    name: Optional[str] = None
-
-
-class level_info(BaseModel):
-    """等级"""
-    current_level: int
-
-
-class pendant(BaseModel):
-    """挂件"""
-    pid: int
-    name: str
-    image: str
-
-
-class official_verify(BaseModel):
-    """认证用户情况"""
-    type: int
-    desc: str
-
-
-class inofcard(BaseModel):
-    official_verify: official_verify
-
-
-class vip(BaseModel):
-    """大会员情况"""
-    vipType: int
-    nickname_color: str
-
-
-class user_profile(BaseModel):
-    info: info
-    level_info: Optional[level_info]
-    pendant: Optional[pendant]
-    card: Optional[inofcard]
-    vip: Optional[vip]
-
-
-class desc(BaseModel):
-    type: int
-    timestamp: int
-    view: int
-    orig_dy_id: Optional[int] = None
-    orig_type: int
-    user_profile: user_profile
-    dynamic_id: int
-
-
-class topic_details(BaseModel):
-    topic_name: str
-    is_activity: bool
-
-# emoji 信息
-
-
-class emoji_details(BaseModel):
-    emoji_name: str
-    id: int
-    text: str
-    url: str
-
-
-class Topic_info(BaseModel):
-    topic_details: List[topic_details]
-
-
-class Emoji_details(BaseModel):
-    emoji_details: List[emoji_details]
-
-
-class at_control(BaseModel):
-    data: int
-    length: int
-    location: int
-    type: int
-
-
-class pictures(BaseModel):
-    img_src: str
-    img_height: int
-    img_width: int
-
-
-class DynamicItem(BaseModel):
-    at_control: Optional[Union[Json, str]] = None
-    description: Optional[str] = None
-    upload_time: Optional[int] = None
-    content: Optional[str] = None
-    ctrl: Optional[Union[Json, str]] = None
-    pictures: Optional[Union[str, List[pictures]]]
-
-
-class vest(BaseModel):
-    content: str
-
-
-class apiSeasonInfo(BaseModel):
-    title: Optional[str]
-    type_name: str
-
-
-class Dynamic(BaseModel):
-    item: Optional[DynamicItem] = None
-    dynamic: Optional[str] = None
-    pic: Optional[str] = None
-    title: Optional[str] = None
-    origin: Optional[Json] = None
-    image_urls: Optional[List] = None
-    summary: Optional[str] = None
-    vest: Optional[vest]
-    origin_user: Optional[user_profile] = None
-
-    duration: Optional[int] = None
-
-    user: Optional[info]
-    owner: Optional[info]
-    author: Optional[info]
-
-    cover: Optional[str] = None
-    area_v2_name: Optional[str] = None
-
-    apiSeasonInfo: Optional[apiSeasonInfo]
-
-    new_desc: Optional[str] = None
-
-
-class desc_first(BaseModel):
-    text: str
-
-
-class reserve_attach_card(BaseModel):
-    title: str
-    desc_first: Optional[Union[str, desc_first]]
-    desc_second: Optional[str]
-    cover_url: Optional[str]
-    head_text: Optional[str]
-
-
-class add_on_card_info(BaseModel):
-    add_on_card_show_type: int
-    reserve_attach_card: Optional[reserve_attach_card]
-    vote_card: Optional[Json]
-    attach_card: Optional[reserve_attach_card]
-
-
-class Display(BaseModel):
-    topic_info: Optional[Topic_info] = None
-    emoji_info: Optional[Emoji_details] = None
-    add_on_card_info: Optional[List[add_on_card_info]]
-    origin: Optional[dict]
-
-
-class DynamicCard(BaseModel):
-    """
-    详细信息的card
-        :desc 动态基本信息
-        :card 动态的内容
-    """
-    desc: Optional[desc]
-    card: Json[Dynamic]
-    display: Display
-
-
-class DynamicData(BaseModel):
-    """动态详细信息data"""
-    card: DynamicCard
-
-
-class DynamicDetail(BaseModel):
-    """动态详细信息接口返回"""
-    code: int
-    data: DynamicData
-
 
 class DynamicPictureRendering:
     """动态渲染器
        --------
     """
-
     def __init__(self, Dynamicdata, tmp_path = None ):
         self.DynamicImg = {}
         self.HeadImg = []
         self.EmojiImg = []
         self.FunctionBlockImg = None
         self.headRenderingImg = None
-        self.NGSSTrckerImg = None
-        self.b23 = None
+        self. 了NGSSTrckerImg = None
         self.DynamicData = DynamicCard(**Dynamicdata)
         self.DynamicId = self.DynamicData.desc.dynamic_id
         self.tmp_path  =  tmp_path
@@ -306,17 +81,6 @@ class DynamicPictureRendering:
             else:
                 return await response.read()
 
-    async def post(self, session, url, data):
-        """实现POST请求"""
-        async with session.post(url, data=data) as response:
-            data = await response.json()
-            self.b23 = data['data']['content']
-
-    async def load(self, session, url, jsont=True):
-        """实现下载图片"""
-        async with session.get(url) as response:
-            return await response.json()
-
     async def getPage(self, url, count=0, tp=0, sz=0):
         """下载图片"""
         async with aiohttp.ClientSession() as session:
@@ -341,6 +105,7 @@ class DynamicPictureRendering:
             return (fontsize, fontsize)
 
     async def makeQRcode(self, data):
+        """制作二维码"""
         qr = qrcode.QRCode(
             version=1,
             error_correction=qrcode.constants.ERROR_CORRECT_L,
@@ -513,7 +278,7 @@ class DynamicPictureRendering:
         根据数据中的信息生成`样式描述信息`(NGSS)与渲染动态文字照片：
 
         :param data: 动态的数据。
-        :returns:  输出为一个渲染好的`图片`。
+        :returns:  输出为一个渲染好的`PIL图片`。
 
         这个函数可以自动的识别、分割出来文字中的艾特、投票、抽奖、标签功能、同时可以渲染表情包，生成指导渲染的信息：
 
@@ -724,7 +489,7 @@ class DynamicPictureRendering:
                                     f, FOUNT_SIZE, s)[0]
                             else:
                                 f = Unifont
-                                for ppp in okf:
+                                for ppp in fontList:
                                     try:
                                         if ord(s) in ppp[0].keys():
                                             f = ppp[1]
@@ -766,7 +531,7 @@ class DynamicPictureRendering:
                                 f, FOUNT_SIZE, i)[0]
                         else:
                             f = Unifont
-                            for ppp in okf:
+                            for ppp in fontList:
                                 try:
                                     if ord(i) in ppp[0].keys():
                                         f = ppp[1]
@@ -1194,7 +959,6 @@ class DynamicPictureRendering:
         """
         # 获取数据
         self.set_tmp_path()
-        start = time.time()
         card = self.DynamicData.card
         desc = self.DynamicData.desc
         display = self.DynamicData.display
@@ -1252,6 +1016,4 @@ class DynamicPictureRendering:
         img.paste(res[0], (590, h-booten.size[1]+30))
         # img.save('t.jpg')
         # img.save(f'./test/{self.DynamicId}.jpg')
-        end = time.time()
-        rtime.append(end-start)
         self.ReprenderIMG = img
