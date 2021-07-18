@@ -43,18 +43,23 @@
 ### 5、项目结构
 本项目结构如下：
 ```
-│  DynamicRender.py                 主要的程序文件
-│  readme.md                        自述文件
+├─ bilibili_dynamic
+│  │
+│  │  DynamicRender.py                 主要的程序文件
+│  │  __init__.py                      __init__.py
+│  │  _version.py                      版本信息
+│  ├─ typeface                         字体文件夹
+│  │  │ Unifont.ttf                    Unifont字体
+│  │  │ CODE2000.ttf                   CODE2000字体
+│  │  │ NotoColorEmoji.ttf             Noto emoji字体
+│  │  │ NotoSansCJKsc-Regular.otf      思源黑体
+│  │  │ NONT LICENSE                   Noto字体 LICENSE
+│  │  
+│  ├─ element                          图片组件文件夹
+│  
+│  README.md                        自述文件
 │  LICENSE                          LICENSE
-│  __init__.py                      __init__.py
-│  _version.py                      版本信息
-├─ typeface                         字体文件夹
-│  │ Unifont.ttf                    Unifont字体
-│  │ CODE2000.ttf                   CODE2000字体
-│  │ NotoColorEmoji.ttf             Noto emoji字体
-│  │ NotoSansCJKsc-Regular.otf      思源黑体
-│  │ NONT LICENSE                   Noto字体 LICENSE
-├─ element                          图片组件文件夹
+
 ```
 ### 6、交流
 外联群QQ:781665797
