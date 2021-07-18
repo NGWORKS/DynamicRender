@@ -801,9 +801,13 @@ class DynamicPictureRendering:
             elif el['f'] == MainFont:
                 img_draw.text(el['d'], el['t'], font=MainFont, fill=el['c'])
             else:
-                print(el['f'],el['t'])
-                oFont = ImageFont.truetype(el['f'], FOUNT_SIZE)
-                img_draw.text(el['d'], el['t'], font=oFont, fill=el['c'])
+                try:
+                    oFont = ImageFont.truetype(el['f'], FOUNT_SIZE)
+                    img_draw.text(el['d'], el['t'], font=oFont, fill=el['c'])
+                except:
+                    print(f"字库中不存在字符{el['t']}，请检查字库是否完整")
+                    oFont = ImageFont.truetype(CODE2000, FOUNT_SIZE)
+                    img_draw.text(el['d'], "⎕", font=oFont, fill=el['c'])
 
         # ISDO 异步下载表情包
         # TODO 复用下载后的对象，下载了之后直接调用，就不要在去磁盘里打开了
