@@ -57,8 +57,9 @@
 │  │  
 │  ├─ element                          图片组件文件夹
 │  
-│  README.md                        自述文件
-│  LICENSE                          LICENSE
+│  README.md         自述文件
+│  LICENSE           LICENSE
+│  test.py           示例       
 
 ```
 ### 6、交流
