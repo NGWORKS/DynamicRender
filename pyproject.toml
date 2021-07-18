@@ -4,7 +4,7 @@ version = "0.0.5"
 description = "将哔哩哔哩返回的数据渲染为类似与B站APP官方的分享图片"
 authors = ["NGWORKS"]
 license = "MIT"
-readme = "./bilibili_dynamic/README.md"
+readme = "README.md"
 repository = "https://github.com/NGWORKS/DynamicRender/"
 
 [tool.poetry.dependencies]
