@@ -11,6 +11,7 @@ import os
 from fontTools.ttLib.ttFont import TTFont
 from matplotlib.font_manager import fontManager
 from pathlib import Path
+from PIL import Image
 
 
 workpath = os.getcwd()
@@ -48,4 +49,8 @@ for f in tfl:
         fontList.append([oouniMap, f[0]])
     except:
         print(f'导入{f[0]}失败，无需处理')
+
+# 静态资源图片
+faceMark = Image.open(bsepth + 'element/hm.png')
+userauth = Image.open(bsepth + 'element/user-auth.png')
 

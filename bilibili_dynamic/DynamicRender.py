@@ -32,6 +32,7 @@ from .format import DynamicCard,Dynamic,Display
 # 初始化
 from .initialize import workpath,bsepth,muniMap,euniMap,cuniMap
 from .initialize import NotoColorEmoji,NotoSansCJK,CODE2000,Unifont,fontList
+from .initialize import faceMark,userauth
 # 文字工具 
 from .textTools import get_font_render_size,KeyWordsCut,AoutLine
 
@@ -52,21 +53,22 @@ class DynamicPictureRendering:
         self.tmp_path  =  tmp_path
 
     def set_tmp_path(self):
-            if self.tmp_path is None:
-                path = './tmp'
-            else:
-                path = self.tmp_path
+        """缓存目录设置"""
+        if self.tmp_path is None:
+            path = './tmp'
+        else:
+            path = self.tmp_path
 
-            if os.path.isabs(path):
-                self.tmp_path = path 
-            else:
-                os.chdir(workpath)
-                self.tmp_path = os.path.abspath(path)
-            self.tmp_path = self.tmp_path + '/'
-            pathlist = [self.tmp_path + 'face/',self.tmp_path + 'pendant/',self.tmp_path + 'emoji/']
-            for p in pathlist:
-                if not os.path.isdir(p):
-                    os.makedirs(p)
+        if os.path.isabs(path):
+            self.tmp_path = path 
+        else:
+            os.chdir(workpath)
+            self.tmp_path = os.path.abspath(path)
+        self.tmp_path = self.tmp_path + '/'
+        pathlist = [self.tmp_path + 'face/',self.tmp_path + 'pendant/',self.tmp_path + 'emoji/']
+        for p in pathlist:
+            if not os.path.isdir(p):
+                os.makedirs(p)
 
     async def fetch(self, session, url):
         """实现GET请求"""
@@ -151,11 +153,8 @@ class DynamicPictureRendering:
         HeadRender = Image.new("RGB", (cpx, cpx), "#FFFFFF")
         if face == None:
             face = Image.open(facePath).resize((fpx, fpx), Image.ANTIALIAS)
-        facem = Image.open(
-            bsepth + 'element/hm.png').resize((fpx, fpx), Image.ANTIALIAS)
-        HeadRender.paste(
-            face, (int((cpx-fpx)/2), int((cpx-fpx)/2)), mask=facem)
-        facem.close()
+        facem = faceMark.resize((fpx, fpx), Image.ANTIALIAS)
+        HeadRender.paste(face, (int((cpx-fpx)/2), int((cpx-fpx)/2)), mask=facem)
 
         if pendant.image != "":
             """渲染头像框"""
@@ -166,20 +165,18 @@ class DynamicPictureRendering:
             HeadRender.paste(pendant, (int((cpx-ppx)/2),
                              int((cpx-ppx)/2)), mask=pendant)
 
-        if official.type != -1 or vip.vipType != 1:
+        if official.type != -1 or vip.vipType != 0:
             """渲染小闪电和大会员标"""
-            if vip.vipType != 1:
+            if vip.vipType != 0:
                 box = (69, 16, 94, 41)
             if official.type == 0:
                 box = (35, 16, 60, 41)
             elif official.type == 1:
                 box = (1, 16, 26, 41)
-            officialimg = Image.open(bsepth + 'element/user-auth.png')
-            officialimg = officialimg.crop(box).resize(
+            officialimg = userauth.crop(box).resize(
                 (ico, ico), Image.ANTIALIAS).convert('RGBA')
             HeadRender.paste(officialimg, (fpx+int(ico/2),
                              fpx+int(ico/2)), mask=officialimg)
-            officialimg.close()
         # 名字颜色
         if vip.nickname_color == "":
             nickname_color = (34, 34, 34)
@@ -386,6 +383,7 @@ class DynamicPictureRendering:
                 if len(text.split('\n')) > 1:
                     element['text'] = text.split('\n')
         del type, text, element
+        
         # RenderList 最终样式规定器 计算宽度，分割，细化最初的NGSS
         START_X, START_Y = (0, 0)
         SZ = 1
@@ -575,12 +573,12 @@ class DynamicPictureRendering:
         ttf_path = NotoSansCJK
         nicknameFont = ImageFont.truetype(ttf_path, 25)
         sFont = ImageFont.truetype(ttf_path, 20)
-        # 投稿视频和直播
+        # 投稿视频 直播 电视剧
         if type in [4099, 4308, 8]:
             if type == 4099:
                 pic = card.cover + '@720w.webp'
                 title = card.new_desc
-            if type == 4308:
+            elif type == 4308:
                 pic = self.DynamicData.card.origin['live_play_info']['cover']
                 title = self.DynamicData.card.origin['live_play_info']['title']
             else:
@@ -847,11 +845,15 @@ class DynamicPictureRendering:
         渲染源动态内容，原理与总动态基本一致，差别仅在字体颜色和对于头部信息渲染的省略。
         """
         type = desc.type
+        print(type)
         if type == 1:
             # 组装信息
             card = card.origin
             display = display.origin
+            if card is None:
+                return None
             card = Dynamic(**card)
+
             if display:
                 display = Display(**display)
             else:

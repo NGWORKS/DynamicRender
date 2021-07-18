@@ -1,4 +1,6 @@
 # .gitignore
 bilibili_dynamic/__pycache__/
+__pycache__/
 tmp/
 dist/
+dynamic_new.json
