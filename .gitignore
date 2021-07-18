@@ -1,3 +1,4 @@
 # .gitignore
-./bilibili_dynamic/__pycache__/
-./tmp/
+bilibili_dynamic/__pycache__/
+tmp/
+dist/

@@ -54,6 +54,7 @@
 │  │  │ NotoColorEmoji.ttf             Noto emoji字体
 │  │  │ NotoSansCJKsc-Regular.otf      思源黑体
 │  │  │ NONT LICENSE                   Noto字体 LICENSE
+│  │  ├─ reserve                       后备字体
 │  │  
 │  ├─ element                          图片组件文件夹
 │  
@@ -73,7 +74,16 @@
 pip install bilibili-dynamic
 ```
 ### (2)、自行构建
-TODO
+* 克隆仓库中的代码。
+* 您可以使用 `poetry` 工具，如果您没有，可以执行下列pip 命令。
+```
+pip install poetry
+```
+* 在项目根目录执行以下命令bulid
+```
+poetry publish --build
+```
+* ./dist 中是构建完成的项目，然后执行（3） 所述的方法安装。
 ### (3)、使用releases中的版本
 请您前往[releases](https://github.com/NGWORKS/DynamicRender/releases/)页面，自行下载后缀名为`.whl`的文件，并牢记文件名称。然后使用：
 ```
