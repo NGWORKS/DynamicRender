@@ -91,6 +91,7 @@ loop = asyncio.get_event_loop()
 loop.run_until_complete(Render.ReneringManage())
 Render.ReprenderIMG.show()
 ```
+> 我们在 `test.py` 中准备了一个小示例，您可以参考其使用。
 
 # 三、如何工作
 我们将动态的渲染分为五大部分，每部分独立渲染：
