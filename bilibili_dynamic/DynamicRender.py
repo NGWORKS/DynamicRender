@@ -32,6 +32,8 @@ from .format import DynamicCard,Dynamic,Display
 # 初始化
 from .initialize import workpath,bsepth,muniMap,euniMap,cuniMap
 from .initialize import NotoColorEmoji,NotoSansCJK,CODE2000,Unifont,fontList
+# 文字工具 
+from .textTools import get_font_render_size,KeyWordsCut,AoutLine
 
 import os,aiohttp,asyncio, time,re, qrcode
 from PIL import Image, ImageFont, ImageDraw
@@ -43,12 +45,8 @@ class DynamicPictureRendering:
        --------
     """
     def __init__(self, Dynamicdata, tmp_path = None ):
-        self.DynamicImg = {}
         self.HeadImg = []
         self.EmojiImg = []
-        self.FunctionBlockImg = None
-        self.headRenderingImg = None
-        self. 了NGSSTrckerImg = None
         self.DynamicData = DynamicCard(**Dynamicdata)
         self.DynamicId = self.DynamicData.desc.dynamic_id
         self.tmp_path  =  tmp_path
@@ -60,7 +58,6 @@ class DynamicPictureRendering:
                 path = self.tmp_path
 
             if os.path.isabs(path):
-                print('1111111')
                 self.tmp_path = path 
             else:
                 os.chdir(workpath)
@@ -71,20 +68,15 @@ class DynamicPictureRendering:
                 if not os.path.isdir(p):
                     os.makedirs(p)
 
-    async def fetch(self, session, url, jsont=True):
+    async def fetch(self, session, url):
         """实现GET请求"""
         async with session.get(url) as response:
-            if jsont:
-                data = await response.json()
-                self.DynamicData = data
-                return data
-            else:
-                return await response.read()
+            return await response.read()
 
     async def getPage(self, url, count=0, tp=0, sz=0):
         """下载图片"""
         async with aiohttp.ClientSession() as session:
-            data = await self.fetch(session, url, jsont=False)
+            data = await self.fetch(session, url)
             pic = Image.open(BytesIO(data))
             if tp == 0:
                 return pic
@@ -93,16 +85,6 @@ class DynamicPictureRendering:
             else:
                 self.EmojiImg.append({"data": pic, "path": count, "id": sz})
             return pic
-
-    def get_font_render_size(self, FOUNT, fontsize, text):
-        """获取字符精准宽度"""
-        try:
-            font = ImageFont.truetype(FOUNT, fontsize, 0)
-            width, height = font.getsize(text)
-            return (width, height)
-        except:
-            print(f'字符{text}宽度计算失败，已使用默认值')
-            return (fontsize, fontsize)
 
     async def makeQRcode(self, data):
         """制作二维码"""
@@ -116,43 +98,6 @@ class DynamicPictureRendering:
         qr.add_data(data)
         qr.make(fit=True)
         return qr.make_image()
-
-    def AoutLine(self, limt, text, size, color='#000000', fount=NotoSansCJK, x=15, y=0):
-        """非富文本样式计算"""
-        START_X = x
-        START_Y = y
-        SZ = 0
-        FOUNT_SIZE = size
-        LINE_HIGHT = 15
-        LINE_LIMT = limt
-        pl = []
-        for i in text:
-            if START_X >= LINE_LIMT:
-                START_X = x
-                START_Y += FOUNT_SIZE + LINE_HIGHT
-            wihdt = self.get_font_render_size(fount, FOUNT_SIZE, i)[0]
-            pl.append({"t": i, "d": (START_X, START_Y), "c": color, "f": fount})
-            START_X += wihdt
-        return pl
-
-    def KeyWordsCut(self, KeyWord, paragraph):
-        """字符串位置检测"""
-        keywordslen = len(KeyWord)
-        wordsList = []
-        i = 0
-        while True:
-            l = paragraph.find(KeyWord)
-            if l == -1:
-                break
-            paragraph = paragraph[l+keywordslen:]
-            if len(wordsList) != 0:
-                b = wordsList[i]
-                l = b + l + keywordslen
-                i += 1
-            wordsList.append(l)
-        wordsList = list(set(wordsList))
-        wordsList.sort()
-        return wordsList
 
     async def headRendering(self, desc):
         """
@@ -343,7 +288,7 @@ class DynamicPictureRendering:
                 """表情包分割方案器"""
                 emojiName = emoji.emoji_name
                 wlen = len(emojiName)
-                worldstarList = self.KeyWordsCut(emojiName, Text)
+                worldstarList = KeyWordsCut(emojiName, Text)
                 for w in worldstarList:
                     msg = {"start": w, "end": w+wlen, "len": wlen,
                            "type": 0, "data": {"url": emoji.url, "id": emoji.id}}
@@ -354,7 +299,7 @@ class DynamicPictureRendering:
                 """话题 活动 分割方案器"""
                 topicTag = f'#{topic.topic_name}#'
                 taglen = len(topicTag)
-                worldstarList = self.KeyWordsCut(topicTag, Text)
+                worldstarList = KeyWordsCut(topicTag, Text)
                 for w in worldstarList:
                     msg = {"start": w, "end": w+taglen,
                            "len": taglen, "type": 1, "data": None}
@@ -371,7 +316,7 @@ class DynamicPictureRendering:
                 reg = r'(.*).bilibili.com'
                 if re.match(reg, n) or n == 'b23.tv':
                     urllen = len(i)
-                    worldstarList = self.KeyWordsCut(i, Text)
+                    worldstarList = KeyWordsCut(i, Text)
                     for w in worldstarList:
                         msg = {"start": w, "end": w+urllen, "len": urllen,
                                "type": 2, "data": {"control": 5}}
@@ -478,14 +423,14 @@ class DynamicPictureRendering:
 
                             if ord(s) in muniMap.keys():
                                 f = MainFontPath
-                                wihdt = self.get_font_render_size(
+                                wihdt = get_font_render_size(
                                     f, FOUNT_SIZE, s)[0]
                             elif ord(s) in euniMap.keys():
                                 f = EmojiFontPath
                                 wihdt = FOUNT_SIZE
                             elif ord(s) in cuniMap.keys():
                                 f = CODE2000
-                                wihdt = self.get_font_render_size(
+                                wihdt = get_font_render_size(
                                     f, FOUNT_SIZE, s)[0]
                             else:
                                 f = Unifont
@@ -496,7 +441,7 @@ class DynamicPictureRendering:
                                             break
                                     except:
                                         pass
-                                wihdt = self.get_font_render_size(
+                                wihdt = get_font_render_size(
                                     f, FOUNT_SIZE, s)[0]
                             rl.append(
                                 {"t": s, "d": (START_X, START_Y), "c": FountColor, "f": f})
@@ -520,14 +465,14 @@ class DynamicPictureRendering:
 
                         if ord(i) in muniMap.keys():
                             f = MainFontPath
-                            wihdt = self.get_font_render_size(
+                            wihdt = get_font_render_size(
                                 f, FOUNT_SIZE, i)[0]
                         elif ord(i) in euniMap.keys():
                             f = EmojiFontPath
                             wihdt = FOUNT_SIZE
                         elif ord(i) in cuniMap.keys():
                             f = CODE2000
-                            wihdt = self.get_font_render_size(
+                            wihdt = get_font_render_size(
                                 f, FOUNT_SIZE, i)[0]
                         else:
                             f = Unifont
@@ -539,7 +484,7 @@ class DynamicPictureRendering:
                                 except:
                                     pass
 
-                            wihdt = self.get_font_render_size(
+                            wihdt = get_font_render_size(
                                 f, FOUNT_SIZE, i)[0]
 
                         rl.append(
@@ -678,7 +623,7 @@ class DynamicPictureRendering:
             img_draw = ImageDraw.Draw(img)
             textcount, allwidth = (0, 0)
             for t in title:
-                wihdt = self.get_font_render_size(NotoSansCJK, 25, t)[0]
+                wihdt = get_font_render_size(NotoSansCJK, 25, t)[0]
                 textcount += 1
                 allwidth += wihdt
                 if allwidth > 675:
@@ -770,7 +715,7 @@ class DynamicPictureRendering:
                 summary = summary[:52] + '...'
             title = card.title
             # ISDO 计算标题文字高度
-            titlestly = self.AoutLine(
+            titlestly = AoutLine(
                 675, title, 30, color='#000000', fount=NotoSansCJK)
             lasttitle = titlestly[len(titlestly)-1]['d'][1] + 30
             tasks = []
@@ -801,7 +746,7 @@ class DynamicPictureRendering:
                     w = h
             lastpic = fulren[len(fulren)-1][1][1] + w
             if summary != '':
-                summstly = self.AoutLine(
+                summstly = AoutLine(
                     675, summary, 25, color='#666666', fount=NotoSansCJK, y=lastpic+20)
                 lastsumm = summstly[len(summstly)-1]['d'][1] + 30
             else:
