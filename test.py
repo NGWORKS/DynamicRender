@@ -106,5 +106,5 @@ Render = DynamicRender.DynamicPictureRendering(data, tmp_path=r"tmp")
 loop = asyncio.get_event_loop()
 loop.run_until_complete(Render.ReneringManage())
 
-# 您可以在实例化的类中的 ReprenderIMG 属性获取图片
+# 您可以在实例化的类中的
 Render.ReprenderIMG.show()

@@ -46,6 +46,8 @@ NotoSansCJK = bsepth + r'typeface/NotoSansCJKsc-Regular.otf'
 NotoColorEmoji = bsepth + r'typeface/NotoColorEmoji.ttf'
 CODE2000 = bsepth + r'typeface/CODE2000.ttf'
 Unifont = bsepth + r'typeface/Unifont.ttf.ttf'
+arial = bsepth + r'typeface/reserve/arial.ttf'
+himalaya = bsepth + r'typeface/reserve/himalaya.ttf'
 
 
 rtime = []
@@ -71,6 +73,11 @@ for f in tfl:
         okf.append([oouniMap, f[0]])
     except:
         print(f'导入{f[0]}失败，无需处理')
+
+# 加入后备字体
+okf.append([TTFont(arial)['cmap'].tables[0].ttFont.getBestCmap(), arial])
+okf.append([TTFont(himalaya)['cmap'].tables[0].ttFont.getBestCmap(), himalaya])
+
 
 
 class info(BaseModel):
@@ -794,6 +801,7 @@ class DynamicPictureRendering:
             elif el['f'] == MainFont:
                 img_draw.text(el['d'], el['t'], font=MainFont, fill=el['c'])
             else:
+                print(el['f'],el['t'])
                 oFont = ImageFont.truetype(el['f'], FOUNT_SIZE)
                 img_draw.text(el['d'], el['t'], font=oFont, fill=el['c'])
 
