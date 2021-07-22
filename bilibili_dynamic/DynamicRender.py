@@ -33,9 +33,9 @@ from .format import DynamicCard,Dynamic,Display
 from .initialize import bsepth,muniMap,euniMap,cuniMap,workpath
 from .initialize import NotoColorEmoji,NotoSansCJK,CODE2000,Unifont,fontList
 # 文字工具 
-from .textTools import get_font_render_size,KeyWordsCut,AoutLine
+from .textTools import get_font_render_size,KeyWordsCut,AoutLine,makeQRcode
 
-import os,aiohttp,asyncio, time,re, qrcode
+import os,aiohttp,asyncio, time,re
 from PIL import Image, ImageFont, ImageDraw
 from urllib.parse import urlparse
 from io import BytesIO
@@ -93,19 +93,6 @@ class DynamicPictureRendering:
             else:
                 self.EmojiImg.append({"data": pic, "path": count, "id": sz})
             return pic
-
-    async def makeQRcode(self, data):
-        """制作二维码"""
-        qr = qrcode.QRCode(
-            version=1,
-            error_correction=qrcode.constants.ERROR_CORRECT_L,
-            box_size=3,
-            border=4
-        )
-        # 传入数据
-        qr.add_data(data)
-        qr.make(fit=True)
-        return qr.make_image()
 
     async def headRendering(self, desc):
         """
@@ -912,7 +899,7 @@ class DynamicPictureRendering:
         desc = self.DynamicData.desc
         display = self.DynamicData.display
         tasks = [
-            self.makeQRcode(f'https://t.bilibili.com/{self.DynamicId}'),
+            makeQRcode(f'https://t.bilibili.com/{self.DynamicId}'),
             self.headRendering(desc),
             self.NGSSTrcker(card, display),
             self.FunctionBlock(desc.type, card),

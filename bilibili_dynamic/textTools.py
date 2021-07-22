@@ -1,6 +1,7 @@
 # -*- encoding: utf-8 -*-
 
 from PIL import ImageFont
+import  qrcode
 from .initialize import NotoSansCJK
 
 def get_font_render_size(FOUNT, fontsize, text):
@@ -56,3 +57,16 @@ def AoutLine(limt, text, size, color='#000000', fount=NotoSansCJK, x=15, y=0):
             pl.append({"t": i, "d": (START_X, START_Y), "c": color, "f": fount})
             START_X += wihdt
         return pl
+
+async def makeQRcode(data):
+    """制作二维码"""
+    qr = qrcode.QRCode(
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_L,
+        box_size=3,
+        border=4
+    )
+    # 传入数据
+    qr.add_data(data)
+    qr.make(fit=True)
+    return qr.make_image()

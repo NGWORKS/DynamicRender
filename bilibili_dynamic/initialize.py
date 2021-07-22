@@ -11,7 +11,9 @@ import os
 from fontTools.ttLib.ttFont import TTFont
 from matplotlib.font_manager import fontManager
 from pathlib import Path
+from .network import Networks
 
+link = Networks()
 
 workpath = os.getcwd()
 bsepth = os.path.dirname(__file__) + '/'
