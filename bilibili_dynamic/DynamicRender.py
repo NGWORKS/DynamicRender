@@ -30,9 +30,8 @@ license: MIT.
 # 数据验证
 from .format import DynamicCard,Dynamic,Display
 # 初始化
-from .initialize import workpath,bsepth,muniMap,euniMap,cuniMap
+from .initialize import bsepth,muniMap,euniMap,cuniMap,workpath
 from .initialize import NotoColorEmoji,NotoSansCJK,CODE2000,Unifont,fontList
-from .initialize import faceMark,userauth
 # 文字工具 
 from .textTools import get_font_render_size,KeyWordsCut,AoutLine
 
@@ -40,35 +39,42 @@ import os,aiohttp,asyncio, time,re, qrcode
 from PIL import Image, ImageFont, ImageDraw
 from urllib.parse import urlparse
 from io import BytesIO
+# 静态资源图片
+faceMark = Image.open(bsepth + 'element/hm.png')
+userauth = Image.open(bsepth + 'element/user-auth.png')
+
+def set_tmp(tmp = None):
+    if tmp is None:
+        path = './tmp'
+    else:
+        path = tmp
+
+    if os.path.isabs(path):
+        tmp = path 
+    else:
+        os.chdir(workpath)
+        tmp = os.path.abspath(path)
+    tmp = tmp + '/'
+    tmp_path = tmp
+    pathlist = [tmp_path + 'face/',tmp_path + 'pendant/',tmp_path + 'emoji/']
+    for p in pathlist:
+        print('r1',p)
+        if not os.path.isdir(p):
+            print('r')
+            os.makedirs(p)
+    return tmp_path
+
 
 class DynamicPictureRendering:
     """动态渲染器
        --------
     """
-    def __init__(self, Dynamicdata, tmp_path = None ):
+    def __init__(self,path = None):
         self.HeadImg = []
         self.EmojiImg = []
-        self.DynamicData = DynamicCard(**Dynamicdata)
-        self.DynamicId = self.DynamicData.desc.dynamic_id
-        self.tmp_path  =  tmp_path
-
-    def set_tmp_path(self):
-        """缓存目录设置"""
-        if self.tmp_path is None:
-            path = './tmp'
-        else:
-            path = self.tmp_path
-
-        if os.path.isabs(path):
-            self.tmp_path = path 
-        else:
-            os.chdir(workpath)
-            self.tmp_path = os.path.abspath(path)
-        self.tmp_path = self.tmp_path + '/'
-        pathlist = [self.tmp_path + 'face/',self.tmp_path + 'pendant/',self.tmp_path + 'emoji/']
-        for p in pathlist:
-            if not os.path.isdir(p):
-                os.makedirs(p)
+        self.DynamicData = None
+        self.DynamicId = None
+        self.tmp_path  =  set_tmp(path)
 
     async def fetch(self, session, url):
         """实现GET请求"""
@@ -304,7 +310,7 @@ class DynamicPictureRendering:
 
         # 识别超链接
 
-        reg = r'https?:[0-9a-zA-Z.?&=_@(-/\d]+'
+        reg = r'https?:[0-9a-zA-Z.?#&=_@(-/\d]+'
         url = re.findall(reg, Text)
         url = list(set(url))
         if len(url) != 0:
@@ -408,7 +414,6 @@ class DynamicPictureRendering:
                     {"id": -1, "d": (START_X, START_Y), "u": element['data']})
                 START_X += FOUNT_SIZE + SZ + 8
             else:
-                # 如果不是list 就没有换行
                 if isinstance(text, list):
                     pp = 1
                     for t in text:
@@ -576,13 +581,13 @@ class DynamicPictureRendering:
         # 投稿视频 直播 电视剧
         if type in [4099, 4308, 8]:
             if type == 4099:
-                pic = card.cover + '@720w.webp'
+                pic = card.cover + '@480w.webp'
                 title = card.new_desc
             elif type == 4308:
-                pic = self.DynamicData.card.origin['live_play_info']['cover']
+                pic = self.DynamicData.card.origin['live_play_info']['cover'] + '@480w.webp'
                 title = self.DynamicData.card.origin['live_play_info']['title']
             else:
-                pic = card.pic + '@720w.webp'
+                pic = card.pic + '@480w.webp'
                 title = card.title
 
             pic = await self.getPage(pic)
@@ -637,10 +642,7 @@ class DynamicPictureRendering:
             # 根据图片数量生成渲染规则
             if piccount == 1:
                 lm = 1
-                if pictures[0].img_width < 1900 and pictures[0].img_height < 1900:
-                    w, h = (pictures[0].img_width, pictures[0].img_height)
-                else:
-                    w, h = (518, None)
+                w, h = (518, None)
             elif piccount in [2, 4]:
                 # 当 图片数量 等于2 或等于4时
                 # 图片是两个一排 宽度平均分
@@ -845,7 +847,6 @@ class DynamicPictureRendering:
         渲染源动态内容，原理与总动态基本一致，差别仅在字体颜色和对于头部信息渲染的省略。
         """
         type = desc.type
-        print(type)
         if type == 1:
             # 组装信息
             card = card.origin
@@ -900,12 +901,13 @@ class DynamicPictureRendering:
                 img.paste(i[0], i[1])
             return img
 
-    async def ReneringManage(self):
+    async def ReneringManage(self,Dynamicdata):
         """渲染任务管理
            ----------
         """
         # 获取数据
-        self.set_tmp_path()
+        self.DynamicData = DynamicCard(**Dynamicdata)
+        self.DynamicId = self.DynamicData.desc.dynamic_id
         card = self.DynamicData.card
         desc = self.DynamicData.desc
         display = self.DynamicData.display

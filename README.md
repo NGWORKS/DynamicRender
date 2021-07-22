@@ -46,6 +46,10 @@
 ├─ bilibili_dynamic
 │  │
 │  │  DynamicRender.py                 主要的程序文件
+│  │  format.py                        进行数据验证的程序文件
+│  │  initialize.py                    进行初始化的程序文件
+│  │  network.py                       进行网络通信的程序文件
+│  │  textTools.py                     进行渲染的部分文字工具
 │  │  __init__.py                      __init__.py
 │  │  _version.py                      版本信息
 │  ├─ typeface                         字体文件夹
@@ -93,15 +97,29 @@ pip install 下载下来的文件名称
 ## 2、使用
 * 传入 API返回数据中的`data`下的`card` 或与结构之一样的数据。
 ```python
-from BiliBili_dynamic import DynamicRender
+from bilibili_dynamic import DynamicRender
 import asyncio
-# data 是上述数据，tmp_path是缓存路径，默认为工作路径下的 tmp目录，您也可以自行指定。
-Render = DynamicRender.DynamicPictureRendering(data,tmp_path =r"tmp")
+
+# 导入数据示例
+from dylist import dylist
+
+
+Render = DynamicRender.DynamicPictureRendering(path="./tmp")
+async def test():
+    for element in dylist:
+        await Render.ReneringManage(element)
+        # 您可以在实例化的类中的 ReprenderIMG 获得图片对象
+        Render.ReprenderIMG.show()
+        break
+
+# 运行协程函数需要在事件循环中运行
 loop = asyncio.get_event_loop()
-loop.run_until_complete(Render.ReneringManage())
-Render.ReprenderIMG.show()
+loop.run_until_complete(test())
 ```
+> **注意：** 这个写法只适用于 `0.0.7` （含）以上的版本。
+
 > 我们在 `test.py` 中准备了一个小示例，您可以参考其使用。
+
 
 # 三、如何工作
 我们将动态的渲染分为五大部分，每部分独立渲染：
