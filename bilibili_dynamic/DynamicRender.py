@@ -28,9 +28,10 @@ copyright: (c) 2021 by NGWORKS.
 license: MIT.
 """
 # 数据验证
+from asyncio.tasks import Task
 from .format import DynamicCard,Dynamic,Display
 # 初始化
-from .initialize import bsepth,muniMap,euniMap,cuniMap,workpath
+from .initialize import bsepth,muniMap,euniMap,cuniMap,workpath,link
 from .initialize import NotoColorEmoji,NotoSansCJK,CODE2000,Unifont,fontList
 # 文字工具 
 from .textTools import get_font_render_size,KeyWordsCut,AoutLine,makeQRcode
@@ -58,12 +59,9 @@ def set_tmp(tmp = None):
     tmp_path = tmp
     pathlist = [tmp_path + 'face/',tmp_path + 'pendant/',tmp_path + 'emoji/']
     for p in pathlist:
-        print('r1',p)
         if not os.path.isdir(p):
-            print('r')
             os.makedirs(p)
     return tmp_path
-
 
 class DynamicPictureRendering:
     """动态渲染器
@@ -75,24 +73,6 @@ class DynamicPictureRendering:
         self.DynamicData = None
         self.DynamicId = None
         self.tmp_path  =  set_tmp(path)
-
-    async def fetch(self, session, url):
-        """实现GET请求"""
-        async with session.get(url) as response:
-            return await response.read()
-
-    async def getPage(self, url, count=0, tp=0, sz=0):
-        """下载图片"""
-        async with aiohttp.ClientSession() as session:
-            data = await self.fetch(session, url)
-            pic = Image.open(BytesIO(data))
-            if tp == 0:
-                return pic
-            elif tp == 1:
-                self.HeadImg.append({"data": pic, "path": count, "type": sz})
-            else:
-                self.EmojiImg.append({"data": pic, "path": count, "id": sz})
-            return pic
 
     async def headRendering(self, desc):
         """
@@ -115,59 +95,73 @@ class DynamicPictureRendering:
         official = user_profile.card.official_verify
         pendant = user_profile.pendant
 
-        tasks = []
         fm = urlparse(userinfo.face).path[10:]
+        pid = pendant.pid
         facePath = self.tmp_path + f'face/{fm}'
-        pendantPath = self.tmp_path + f'pendant/{pendant.pid}.png'
+        pendantPath = self.tmp_path + f'pendant/{pid}.png'
         """这里对头像与挂件进行了判断，生成了tasks的任务列表，对头像、挂件进行下载"""
 
-        if not os.path.exists(facePath):
-            """判断本地有没有头像"""
-            tasks.append(self.getPage(userinfo.face+'@150w.webp', facePath, 1))
+        tasks = []
 
-        if not os.path.exists(pendantPath) and pendant.pid != 0:
-            tasks.append(self.getPage(
-                pendant.image+'@180w.webp', pendantPath, 1, 1))
+        if fm in link.HeadImg:
+            # 查看缓存中是否存在图片
+            face = link.HeadImg[fm]
+        elif os.path.exists(facePath):
+            # 查看硬盘中是否存在图片
+            face = Image.open(facePath).resize((fpx, fpx), Image.ANTIALIAS)
+            link.HeadImg[fm] = face
+        else:
+            tasks.append(link.getPage(userinfo.face+'@150w.webp',1,fm))
+            
+        if pid == 0:
+            # pendant.pid = 0 时 用户没有装备头像框 
+            pendant = None
+        elif pid in link.Pendant:
+            # 查看缓存中是否存在图片
+            pendant = link.Pendant[pid]
+        elif os.path.exists(pendantPath):
+            # 查看硬盘中是否存在图片
+            pendant = Image.open(pendantPath)
+            link.Pendant[pid] = pendant
+        else:
+            tasks.append(link.getPage(pendant.image+'@180w.webp',3,pendant.pid))
 
         if len(tasks) != 0:
-            await asyncio.gather(*tasks)
-            for n in self.HeadImg:
-                n['data'].save(n['path'])
-        face, pendantimg = (None, None)
-        # 新建头像渲染画布
-        if len(self.HeadImg) != 0:
-            for i in self.HeadImg:
-                if i['type'] == 0:
-                    face = i['data'].resize((fpx, fpx), Image.ANTIALIAS)
+            # 如果有下载任务
+            imgs = await asyncio.gather(*tasks)
+            for img in imgs:
+                pic,type  = img
+                if type == 1:
+                    pic.save(facePath)
+                    face = pic
                 else:
-                    pendantimg = i['data'].resize(
-                        (ppx, ppx), Image.ANTIALIAS).convert('RGBA')
+                    pic.save(pendantPath)
+                    pendant = pic
 
+        # 新建头像渲染画布
         HeadRender = Image.new("RGB", (cpx, cpx), "#FFFFFF")
-        if face == None:
-            face = Image.open(facePath).resize((fpx, fpx), Image.ANTIALIAS)
-        facem = faceMark.resize((fpx, fpx), Image.ANTIALIAS)
-        HeadRender.paste(face, (int((cpx-fpx)/2), int((cpx-fpx)/2)), mask=facem)
 
-        if pendant.image != "":
-            """渲染头像框"""
-            if pendantimg:
-                pendant = pendantimg
-            else:
-                pendant = Image.open(pendantPath).resize((ppx, ppx), Image.ANTIALIAS).convert('RGBA')
-            HeadRender.paste(pendant, (int((cpx-ppx)/2),
-                             int((cpx-ppx)/2)), mask=pendant)
+        facem = faceMark.resize((fpx, fpx), Image.ANTIALIAS)
+        HeadRender.paste(face.resize((fpx, fpx), Image.ANTIALIAS), (int((cpx-fpx)/2), int((cpx-fpx)/2)), mask=facem)
+
+        # 存在没有头像框的情况
+        if pendant:
+            pendant = pendant.resize((ppx, ppx), Image.ANTIALIAS).convert('RGBA')
+            HeadRender.paste(pendant, (int((cpx-ppx)/2),int((cpx-ppx)/2)), mask=pendant)
 
         if official.type != -1 or vip.vipType != 0:
-            """渲染小闪电和大会员标"""
+        # 是 大会员 或者 认证号
             if vip.vipType != 0:
                 box = (69, 16, 94, 41)
+            # 认证号的优先级高，会覆盖大会员 
             if official.type == 0:
                 box = (35, 16, 60, 41)
             elif official.type == 1:
                 box = (1, 16, 26, 41)
+            # 根据上面的BOX剪裁
             officialimg = userauth.crop(box).resize(
                 (ico, ico), Image.ANTIALIAS).convert('RGBA')
+            # 粘贴
             HeadRender.paste(officialimg, (fpx+int(ico/2),
                              fpx+int(ico/2)), mask=officialimg)
         # 名字颜色
@@ -189,7 +183,6 @@ class DynamicPictureRendering:
         timeFont = ImageFont.truetype(ttf_path, int(cpx/8))
         timeArray = time.localtime(desc.timestamp)
         otherStyleTime = time.strftime("%m-%d %H:%M", timeArray)
-        # TODO 添加动态类型判断
 
         timeText = f'{otherStyleTime}'
 
@@ -522,37 +515,37 @@ class DynamicPictureRendering:
 
         # 原生表情包处理
         if len(pl) != 0:
-            emojiid = {}
-            for emoji in pl:
-                emojiid[emoji['id']] = emoji['u']
-
-            keys = emojiid.keys()
+            # 取表情包图片缓存
+            emojiPicDict = {}
             tasks = []
-            for id in keys:
-                if not os.path.exists(self.tmp_path + f'emoji/{id}.png'):
-                    tasks.append(asyncio.create_task(self.getPage(
-                        emojiid[id], self.tmp_path + f'emoji/{id}.png', 2, id)))
+            for emoji in pl:
+                id = emoji['id']
+                imgpath = self.tmp_path + f'emoji/{id}.png'
+                if id in link.EmojiImg:
+                    # 下载缓存中存在图片
+                    emojiPicDict[id] = link.EmojiImg[id]
+                elif os.path.exists(imgpath):
+                    # 本地硬盘中存在
+                    emojiPicDict[id] = Image.open(imgpath)
+                else:
+                    tasks.append(link.getPage(emoji['u'],2,id))
 
-            emlist = {}
             if len(tasks) != 0:
-                await asyncio.wait(tasks)
-                for n in self.EmojiImg:
-                    n['data'].save(n['path'])
-                    emlist[n['id']] = n['data'].resize(
-                        (FOUNT_SIZE+10, FOUNT_SIZE+10), Image.ANTIALIAS).convert('RGBA')
+                imgs = await asyncio.gather(*tasks)
+                for img in imgs:
+                    pic,id = img
+                    imgpath = self.tmp_path + f'emoji/{id}.png'
+                    pic.save(imgpath)
+                    emojiPicDict[id] = pic
+
 
             for emoji in pl:
                 id = emoji['id']
-                if id in emlist:
-                    emimg = emlist[id]
-                else:
-                    emimg = Image.open(
-                        self.tmp_path + f'emoji/{id}.png').resize((FOUNT_SIZE+10, FOUNT_SIZE+10), Image.ANTIALIAS).convert('RGBA')
-                    emlist[id] = emimg
+                emimg = emojiPicDict[id].resize((FOUNT_SIZE+10, FOUNT_SIZE+10), Image.ANTIALIAS).convert('RGBA')
 
                 Render.paste(emimg, emoji['d'], mask=emimg)
 
-            del pl, tasks, emoji, id, emimg
+            del pl, tasks
         return Render
 
     async def FunctionBlock(self, type, card, background="#FFFFFF"):
@@ -577,7 +570,7 @@ class DynamicPictureRendering:
                 pic = card.pic + '@480w.webp'
                 title = card.title
 
-            pic = await self.getPage(pic)
+            pic = await link.getPage(pic)
             picsize = pic.size
             # TODO 图片可以通过哔哩哔哩图床剪裁，后期研究修改
             # 根据图片实际大小剪裁为16*9
@@ -656,7 +649,7 @@ class DynamicPictureRendering:
                 else:
                     # 如果h为None
                     url = pic.img_src+f'@{w}w{cutrule}.webp'
-                tasks.append(self.getPage(url))
+                tasks.append(link.getPage(url))
 
             # 等待结果返回
 
@@ -710,9 +703,9 @@ class DynamicPictureRendering:
             piccount = len(image_urls)
             for pic in image_urls:
                 if piccount != 1:
-                    tasks.append(self.getPage(pic+'@104w_104h_1e_1c.webp'))
+                    tasks.append(link.getPage(pic+'@104w_104h_1e_1c.webp'))
                 else:
-                    tasks.append(self.getPage(pic+'@520w_120h_1e_1c.webp'))
+                    tasks.append(link.getPage(pic+'@520w_120h_1e_1c.webp'))
                 i += 1
 
             res = await asyncio.gather(*tasks)
@@ -758,7 +751,7 @@ class DynamicPictureRendering:
             # 图片 @203w_127h_1e_1c.webp
             title = card.title
             url = card.cover + '@203w_127h_1e_1c.webp'
-            cover = await self.getPage(url)
+            cover = await link.getPage(url)
             area = card.area_v2_name
 
             img = Image.new("RGB", (740, 127), background)
@@ -782,7 +775,7 @@ class DynamicPictureRendering:
             if type == 2:
                 data = display.add_on_card_info[0].attach_card
                 cover_url = data.cover_url + '@110w_110h_1e_1c.webp'
-                cover = await self.getPage(cover_url)
+                cover = await link.getPage(cover_url)
                 title = data.title
                 desc_first = data.desc_first
                 desc_second = data.desc_second

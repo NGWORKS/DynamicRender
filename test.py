@@ -7,6 +7,7 @@ from dylist import dylist
 
 
 Render = DynamicRender.DynamicPictureRendering(path="./tmp")
+
 async def test():
     for element in dylist:
         await Render.ReneringManage(element)
