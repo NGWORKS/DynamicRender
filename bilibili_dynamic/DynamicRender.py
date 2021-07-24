@@ -30,14 +30,20 @@ license: MIT.
 # 数据验证
 from asyncio.tasks import Task
 from asyncio.windows_events import PipeServer
-from .format import DynamicCard,Dynamic,Display
+from .format import DynamicCard, Dynamic, Display
 # 初始化
-from .initialize import bsepth,muniMap,euniMap,cuniMap,workpath,link
-from .initialize import NotoColorEmoji,NotoSansCJK,CODE2000,Unifont,fontList
-# 文字工具 
-from .textTools import get_font_render_size,KeyWordsCut,AoutLine,makeQRcode
+from .initialize import bsepth, muniMap, euniMap, cuniMap, workpath, link
+from .initialize import NotoColorEmoji, NotoSansCJK, CODE2000, Unifont, fontList
+# 文字工具
+from .textTools import get_font_render_size, KeyWordsCut, AoutLine, makeQRcode
 
-import os,aiohttp,asyncio, time,re
+from .textRender import renderStely
+
+import os
+import aiohttp
+import asyncio
+import time
+import re
 from PIL import Image, ImageFont, ImageDraw
 from urllib.parse import urlparse
 from io import BytesIO
@@ -45,7 +51,8 @@ from io import BytesIO
 faceMark = Image.open(bsepth + 'element/hm.png')
 userauth = Image.open(bsepth + 'element/user-auth.png')
 
-def set_tmp(tmp = None):
+
+def set_tmp(tmp=None):
     if tmp == False:
         return False
 
@@ -55,28 +62,30 @@ def set_tmp(tmp = None):
         path = tmp
 
     if os.path.isabs(path):
-        tmp = path 
+        tmp = path
     else:
         os.chdir(workpath)
         tmp = os.path.abspath(path)
     tmp = tmp + '/'
     tmp_path = tmp
-    pathlist = [tmp_path + 'face/',tmp_path + 'pendant/',tmp_path + 'emoji/']
+    pathlist = [tmp_path + 'face/', tmp_path + 'pendant/', tmp_path + 'emoji/']
     for p in pathlist:
         if not os.path.isdir(p):
             os.makedirs(p)
     return tmp_path
 
+
 class DynamicPictureRendering:
     """动态渲染器
        --------
     """
-    def __init__(self,path = None):
+
+    def __init__(self, path=None):
         self.HeadImg = []
         self.EmojiImg = []
         self.DynamicData = None
         self.DynamicId = None
-        self.tmp_path  =  set_tmp(path)
+        self.tmp_path = set_tmp(path)
 
     async def headRendering(self, desc):
         """
@@ -115,10 +124,10 @@ class DynamicPictureRendering:
             face = Image.open(facePath).resize((fpx, fpx), Image.ANTIALIAS)
             link.HeadImg[fm] = face
         else:
-            tasks.append(link.getPage(userinfo.face+'@150w.webp',1,fm))
-            
+            tasks.append(link.getPage(userinfo.face+'@150w.webp', 1, fm))
+
         if pid == 0:
-            # pendant.pid = 0 时 用户没有装备头像框 
+            # pendant.pid = 0 时 用户没有装备头像框
             pendant = None
         elif pid in link.Pendant:
             # 查看缓存中是否存在图片
@@ -128,13 +137,14 @@ class DynamicPictureRendering:
             pendant = Image.open(pendantPath)
             link.Pendant[pid] = pendant
         else:
-            tasks.append(link.getPage(pendant.image+'@180w.webp',3,pendant.pid))
+            tasks.append(link.getPage(
+                pendant.image+'@180w.webp', 3, pendant.pid))
 
         if len(tasks) != 0:
             # 如果有下载任务
             imgs = await asyncio.gather(*tasks)
             for img in imgs:
-                pic,type  = img
+                pic, type = img
                 if type == 1:
                     savePath = facePath
                     face = pic
@@ -148,18 +158,21 @@ class DynamicPictureRendering:
         HeadRender = Image.new("RGB", (cpx, cpx), "#FFFFFF")
 
         facem = faceMark.resize((fpx, fpx), Image.ANTIALIAS)
-        HeadRender.paste(face.resize((fpx, fpx), Image.ANTIALIAS), (int((cpx-fpx)/2), int((cpx-fpx)/2)), mask=facem)
+        HeadRender.paste(face.resize((fpx, fpx), Image.ANTIALIAS),
+                         (int((cpx-fpx)/2), int((cpx-fpx)/2)), mask=facem)
 
         # 存在没有头像框的情况
         if pendant:
-            pendant = pendant.resize((ppx, ppx), Image.ANTIALIAS).convert('RGBA')
-            HeadRender.paste(pendant, (int((cpx-ppx)/2),int((cpx-ppx)/2)), mask=pendant)
+            pendant = pendant.resize(
+                (ppx, ppx), Image.ANTIALIAS).convert('RGBA')
+            HeadRender.paste(pendant, (int((cpx-ppx)/2),
+                             int((cpx-ppx)/2)), mask=pendant)
 
         if official.type != -1 or vip.vipType != 0:
-        # 是 大会员 或者 认证号
+            # 是 大会员 或者 认证号
             if vip.vipType != 0:
                 box = (69, 16, 94, 41)
-            # 认证号的优先级高，会覆盖大会员 
+            # 认证号的优先级高，会覆盖大会员
             if official.type == 0:
                 box = (35, 16, 60, 41)
             elif official.type == 1:
@@ -342,7 +355,8 @@ class DynamicPictureRendering:
                 data = {'type': NGSS[count]['type'], 'text': Text[NGSS[count]
                                                                   ['start']+1:NGSS[count]['end']], "data": NGSS[count]['data']}
             elif NGSS[count]['type'] == 2 and NGSS[count]['data']['control'] == 5:
-                data = {'type': 3, 'text': '', "data": bsepth + 'element/link.png'}
+                data = {'type': 3, 'text': '',
+                        "data": bsepth + 'element/link.png'}
                 RenderList.append(data)
                 data = {'type': NGSS[count]['type'],
                         'text': '网页链接', "data": NGSS[count]['data']}
@@ -375,10 +389,10 @@ class DynamicPictureRendering:
                 if len(text.split('\n')) > 1:
                     element['text'] = text.split('\n')
         del type, text, element
-        
+
         # RenderList 最终样式规定器 计算宽度，分割，细化最初的NGSS
         START_X, START_Y = (0, 0)
-        SZ = 1
+        SZ = 0
         FOUNT_SIZE = 30
         LINE_HIGHT = 15
         LINE_LIMT = 675
@@ -478,7 +492,7 @@ class DynamicPictureRendering:
 
                         rl.append(
                             {"t": i, "d": (START_X, START_Y), "c": c, "f": f})
-                        START_X += wihdt + SZ
+                        START_X += wihdt + SZ     
 
         Render = Image.new(
             "RGB", (700, START_Y+FOUNT_SIZE+LINE_HIGHT), Background)
@@ -486,7 +500,8 @@ class DynamicPictureRendering:
         # 正文字体
         MainFont = ImageFont.truetype(MainFontPath, FOUNT_SIZE)
         EmojiFont = ImageFont.truetype(EmojiFontPath, 109)
-
+        print('----------------------------------------------')
+        print(rl,pl,tl)
         # 文字emoji处理
         for el in rl:
             if el['f'] == EmojiFontPath:
@@ -536,21 +551,21 @@ class DynamicPictureRendering:
                     # 本地硬盘中存在
                     emojiPicDict[id] = Image.open(imgpath)
                 else:
-                    tasks.append(link.getPage(emoji['u'],2,id))
+                    tasks.append(link.getPage(emoji['u'], 2, id))
 
             if len(tasks) != 0:
                 imgs = await asyncio.gather(*tasks)
                 for img in imgs:
-                    pic,id = img
+                    pic, id = img
                     if self.tmp_path != False:
                         imgpath = f'{self.tmp_path}emoji/{id}.png'
                         pic.save(imgpath)
                     emojiPicDict[id] = pic
 
-
             for emoji in pl:
                 id = emoji['id']
-                emimg = emojiPicDict[id].resize((FOUNT_SIZE+10, FOUNT_SIZE+10), Image.ANTIALIAS).convert('RGBA')
+                emimg = emojiPicDict[id].resize(
+                    (FOUNT_SIZE+10, FOUNT_SIZE+10), Image.ANTIALIAS).convert('RGBA')
 
                 Render.paste(emimg, emoji['d'], mask=emimg)
 
@@ -890,7 +905,7 @@ class DynamicPictureRendering:
                 img.paste(i[0], i[1])
             return img
 
-    async def ReneringManage(self,Dynamicdata):
+    async def ReneringManage(self, Dynamicdata):
         """渲染任务管理
            ----------
         """

@@ -1,5 +1,5 @@
 # -*- encoding: utf-8 -*-
-from bilibili_dynamic import DynamicRender
+from bilibili_dynamic import DynamicRender,textTools,initialize
 import asyncio
 
 # 导入数据示例
@@ -16,6 +16,7 @@ async def test():
         await Render.ReneringManage(element)
         # 您可以在实例化的类中的 ReprenderIMG 获得图片对象
         Render.ReprenderIMG.show()
+        
 
 # 运行协程函数需要在事件循环中运行
 loop = asyncio.get_event_loop()
