@@ -29,6 +29,7 @@ license: MIT.
 """
 # 数据验证
 from asyncio.tasks import Task
+from asyncio.windows_events import PipeServer
 from .format import DynamicCard,Dynamic,Display
 # 初始化
 from .initialize import bsepth,muniMap,euniMap,cuniMap,workpath,link
@@ -45,6 +46,9 @@ faceMark = Image.open(bsepth + 'element/hm.png')
 userauth = Image.open(bsepth + 'element/user-auth.png')
 
 def set_tmp(tmp = None):
+    if tmp == False:
+        return False
+
     if tmp is None:
         path = './tmp'
     else:
@@ -97,8 +101,8 @@ class DynamicPictureRendering:
 
         fm = urlparse(userinfo.face).path[10:]
         pid = pendant.pid
-        facePath = self.tmp_path + f'face/{fm}'
-        pendantPath = self.tmp_path + f'pendant/{pid}.png'
+        facePath = f'{self.tmp_path}face/{fm}'
+        pendantPath = f'{self.tmp_path}pendant/{pid}.png'
         """这里对头像与挂件进行了判断，生成了tasks的任务列表，对头像、挂件进行下载"""
 
         tasks = []
@@ -106,7 +110,7 @@ class DynamicPictureRendering:
         if fm in link.HeadImg:
             # 查看缓存中是否存在图片
             face = link.HeadImg[fm]
-        elif os.path.exists(facePath):
+        elif self.tmp_path != False and os.path.exists(facePath):
             # 查看硬盘中是否存在图片
             face = Image.open(facePath).resize((fpx, fpx), Image.ANTIALIAS)
             link.HeadImg[fm] = face
@@ -119,7 +123,7 @@ class DynamicPictureRendering:
         elif pid in link.Pendant:
             # 查看缓存中是否存在图片
             pendant = link.Pendant[pid]
-        elif os.path.exists(pendantPath):
+        elif self.tmp_path != False and os.path.exists(pendantPath):
             # 查看硬盘中是否存在图片
             pendant = Image.open(pendantPath)
             link.Pendant[pid] = pendant
@@ -132,11 +136,13 @@ class DynamicPictureRendering:
             for img in imgs:
                 pic,type  = img
                 if type == 1:
-                    pic.save(facePath)
+                    savePath = facePath
                     face = pic
                 else:
-                    pic.save(pendantPath)
+                    savePath = pendantPath
                     pendant = pic
+                if self.tmp_path != False:
+                    pic.save(savePath)
 
         # 新建头像渲染画布
         HeadRender = Image.new("RGB", (cpx, cpx), "#FFFFFF")
@@ -520,11 +526,13 @@ class DynamicPictureRendering:
             tasks = []
             for emoji in pl:
                 id = emoji['id']
-                imgpath = self.tmp_path + f'emoji/{id}.png'
+
+                imgpath = f'{self.tmp_path}emoji/{id}.png'
+
                 if id in link.EmojiImg:
                     # 下载缓存中存在图片
                     emojiPicDict[id] = link.EmojiImg[id]
-                elif os.path.exists(imgpath):
+                elif self.tmp_path != False and os.path.exists(imgpath):
                     # 本地硬盘中存在
                     emojiPicDict[id] = Image.open(imgpath)
                 else:
@@ -534,8 +542,9 @@ class DynamicPictureRendering:
                 imgs = await asyncio.gather(*tasks)
                 for img in imgs:
                     pic,id = img
-                    imgpath = self.tmp_path + f'emoji/{id}.png'
-                    pic.save(imgpath)
+                    if self.tmp_path != False:
+                        imgpath = f'{self.tmp_path}emoji/{id}.png'
+                        pic.save(imgpath)
                     emojiPicDict[id] = pic
 
 

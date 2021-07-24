@@ -97,13 +97,14 @@ pip install 下载下来的文件名称
 
 ## 2、使用
 * 传入 API返回数据中的`data`下的`card` 或与结构之一样的数据。
+* `path`参数用于指定缓存文件夹路径 不定义则默认为`工作路径`下的`tmp`文件夹，您可以为其指定正确的`绝对路径`或`相对路径`以自定义缓存文件夹，当然您也可以指定布尔值`False`，即不缓存。
+
 ```python
 from bilibili_dynamic import DynamicRender
 import asyncio
 
 # 导入数据示例
 from dylist import dylist
-
 
 Render = DynamicRender.DynamicPictureRendering(path="./tmp")
 async def test():

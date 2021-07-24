@@ -6,14 +6,13 @@ import asyncio
 from dylist import dylist
 
 
-Render = DynamicRender.DynamicPictureRendering(path="./tmp")
+Render = DynamicRender.DynamicPictureRendering(path=False)
 
 async def test():
     for element in dylist:
         await Render.ReneringManage(element)
         # 您可以在实例化的类中的 ReprenderIMG 获得图片对象
         Render.ReprenderIMG.show()
-        break
 
 # 运行协程函数需要在事件循环中运行
 loop = asyncio.get_event_loop()
