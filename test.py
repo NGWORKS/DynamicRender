@@ -5,7 +5,10 @@ import asyncio
 # 导入数据示例
 from dylist import dylist
 
-
+# `path`参数用于指定缓存文件夹路径 
+# 不定义则默认为`工作路径`下的`tmp`文件夹
+# 您可以为其指定正确的`绝对路径`或`相对路径`以自定义缓存文件夹
+# 当然您也可以指定布尔值`False`，即不缓存。
 Render = DynamicRender.DynamicPictureRendering(path=False)
 
 async def test():
