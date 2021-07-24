@@ -174,4 +174,4 @@ loop.run_until_complete(test())
 - [`Google Noto Fonts`](https://www.google.cn/get/noto/)：适用于所有语言的漂亮且免费的字体！
 - [`unifont`](http://www.unifont.org/new/)：伟大的字体项目
 ## 3、license
-MIT.
+AGPL-3.0 许可证
