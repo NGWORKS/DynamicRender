@@ -1,0 +1,67 @@
+{
+    "user": {
+        "uid": 37815472,
+        "uname": "_DMC_",
+        "face": "https://i1.hdslb.com/bfs/face/b796fc234e84db55d37f48562004a070705c2258.jpg"
+    },
+    "item": {
+        "rp_id": 551080493472049412,
+        "uid": 37815472,
+        "content": "#赤壁(上)# ",
+        "ctrl": "",
+        "orig_dy_id": 550968716957514316,
+        "pre_dy_id": 550968716957514316,
+        "timestamp": 1627146826,
+        "reply": 0,
+        "orig_type": 4098
+    },
+    "origin": {
+        "aid": 889346839,
+        "apiSeasonInfo": {
+            "bgm_type": 2,
+            "cover": "https: //i0.hdslb.com/bfs/bangumi/image/6ca1b29e2446586ada8647e6e94df53cbbebc5a7.png",
+            "is_finish": 1,
+            "season_id": 39152,
+            "title": "赤壁(上)",
+            "total_count": -1,
+            "ts": 1627274547,
+            "type_name": "电影"
+        },
+        "bullet_count": 9408,
+        "cover": "https://i0.hdslb.com/bfs/archive/6c1cb4b54e66ad09127d0b160b2bf2eea3fab05e.png",
+        "episode_id": 413852,
+        "index": "正片",
+        "index_title": "",
+        "item": {
+            "at_control": ""
+        },
+        "new_desc": "",
+        "online_finish": 1,
+        "play_count": 230724,
+        "reply_count": 1980,
+        "url": "https://www.bilibili.com/bangumi/play/ep413852?theme=movie"
+    },
+    "origin_extend_json": {
+        "like_icon": {
+            "action": "",
+            "action_url": "",
+            "end": "",
+            "end_url": "",
+            "start": "",
+            "start_url": ""
+        },
+        "repeat_resource": {
+            "items": [
+                {
+                    "rid": 889346839,
+                    "type": 8
+                }
+            ]
+        }
+    },
+    "origin_user": {
+        "info": {
+            "uid": 39152
+        }
+    }
+}
