@@ -32,8 +32,7 @@ from asyncio.tasks import Task
 from asyncio.windows_events import PipeServer
 from .format import DynamicCard, Dynamic, Display
 # 初始化
-from .initialize import bsepth, muniMap, euniMap, cuniMap, workpath, link
-from .initialize import NotoColorEmoji, NotoSansCJK, CODE2000, Unifont, fontList
+from .initialize import bsepth, muniMap, euniMap, cuniMap, workpath, link,NotoColorEmoji, NotoSansCJK, CODE2000, Unifont, fontList
 # 文字工具
 from .textTools import get_font_render_size, KeyWordsCut, AoutLine, makeQRcode
 
@@ -582,11 +581,17 @@ class DynamicPictureRendering:
         ttf_path = NotoSansCJK
         nicknameFont = ImageFont.truetype(ttf_path, 25)
         sFont = ImageFont.truetype(ttf_path, 20)
-        # 投稿视频 直播 电视剧
-        if type in [4099, 4308, 8]:
-            if type == 4099:
+        # TODO 4302 付费课程
+        # 投稿视频 直播 电视剧 
+        if type in [4098,4099,4101,4308,8,4098,512,4302]:
+            # 电视剧-电影-番剧/国漫-纪录片
+            if type in [4098,4099,512,4101,4302]:
                 pic = card.cover + '@480w.webp'
                 title = card.new_desc
+                if not card.new_desc:
+                    title = card.title
+                if not card.title:
+                    title = self.DynamicData.card.origin["apiSeasonInfo"]["title"]
             elif type == 4308:
                 pic = self.DynamicData.card.origin['live_play_info']['cover'] + '@480w.webp'
                 title = self.DynamicData.card.origin['live_play_info']['title']
@@ -596,7 +601,6 @@ class DynamicPictureRendering:
 
             pic = await link.getPage(pic)
             picsize = pic.size
-            # TODO 图片可以通过哔哩哔哩图床剪裁，后期研究修改
             # 根据图片实际大小剪裁为16*9
             box = (0, int((picsize[1]-(picsize[0]/16*9))/2), picsize[0],
                    int(((picsize[1]-(picsize[0]/16*9))/2)+(picsize[0]/16*9)))
@@ -893,9 +897,12 @@ class DynamicPictureRendering:
             # 添加简略头部信息 如 “ @NGWORKS ” 样式
             if self.DynamicData.card.origin_user.info.uname:
                 name = '@'+self.DynamicData.card.origin_user.info.uname
-            else:
+            elif card.apiSeasonInfo:
                 # 这里一般是番剧、电视剧、影视等等
                 name = card.apiSeasonInfo.title
+            elif self.DynamicData.card.origin["up_info"]:
+                name = '@'+self.DynamicData.card.origin["up_info"]["name"]
+
             # 头部信息字体
             MainFont = ImageFont.truetype(NotoSansCJK, 28)
             img_d.text((20, 10), name, font=MainFont, fill="#178bcf")
