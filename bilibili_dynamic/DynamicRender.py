@@ -240,340 +240,345 @@ class DynamicPictureRendering:
 
 
         """
-        # 找文字块
-        if card.item != None:
-            if card.item.description != None:
-                Text = card.item.description
-            elif card.item.content != None:
-                Text = card.item.content
+        try:
+            # 找文字块
+            if card.item != None:
+                if card.item.description != None:
+                    Text = card.item.description
+                elif card.item.content != None:
+                    Text = card.item.content
 
-        elif card.dynamic != None and card.dynamic != "":
-            Text = card.dynamic
-        elif card.vest != None:
-            Text = card.vest.content
-        else:
-            return None
+            elif card.dynamic != None and card.dynamic != "":
+                Text = card.dynamic
+            elif card.vest != None:
+                Text = card.vest.content
+            else:
+                return None
 
 
-        # 找艾特 抽奖 投票
-        at_control = None
-        if card.item != None:
-            if card.item.at_control != None and card.item.at_control != "":
-                at_control = card.item.at_control
-            elif card.item.ctrl != None and card.item.ctrl != []:
-                at_control = card.item.ctrl
+            # 找艾特 抽奖 投票
+            at_control = None
+            if card.item != None:
+                if card.item.at_control != None and card.item.at_control != "":
+                    at_control = card.item.at_control
+                elif card.item.ctrl != None and card.item.ctrl != []:
+                    at_control = card.item.ctrl
 
-        # 表情包 话题标签
-        if display.topic_info != None:
-            topics = display.topic_info.topic_details
-        else:
-            topics = None
+            # 表情包 话题标签
+            if display.topic_info != None:
+                topics = display.topic_info.topic_details
+            else:
+                topics = None
 
-        if display.emoji_info != None:
-            emojis = display.emoji_info.emoji_details
-        else:
-            emojis = None
-        del display, card
+            if display.emoji_info != None:
+                emojis = display.emoji_info.emoji_details
+            else:
+                emojis = None
+            del display, card
 
-        # 分割方案生成器
-        division = []
-        if at_control != None:
-            for control in at_control:
-                """艾特 抽奖 投票分割方案器"""
+            # 分割方案生成器
+            division = []
+            if at_control != None:
+                for control in at_control:
+                    """艾特 抽奖 投票分割方案器"""
 
-                if control['type'] != 1:
-                    # 如果不是普通的艾特信息 艾特 1 互动抽奖 2 投票 3
-                    control['length'] = int(control['data'])
-                msg = {"start": control['location'], "end": control['location']+control['length'],
-                       "len": control['length'], "type": 2, "data": {"control": control['type']}}
-                division.append(msg)
-
-        if emojis != None:
-            for emoji in emojis:
-                """表情包分割方案器"""
-                emojiName = emoji.emoji_name
-                wlen = len(emojiName)
-                worldstarList = KeyWordsCut(emojiName, Text)
-                for w in worldstarList:
-                    msg = {"start": w, "end": w+wlen, "len": wlen,
-                           "type": 0, "data": {"url": emoji.url, "id": emoji.id}}
+                    if control['type'] != 1:
+                        # 如果不是普通的艾特信息 艾特 1 互动抽奖 2 投票 3
+                        control['length'] = int(control['data'])
+                    msg = {"start": control['location'], "end": control['location']+control['length'],
+                        "len": control['length'], "type": 2, "data": {"control": control['type']}}
                     division.append(msg)
 
-        if topics != None:
-            for topic in topics:
-                """话题 活动 分割方案器"""
-                topicTag = f'#{topic.topic_name}#'
-                taglen = len(topicTag)
-                worldstarList = KeyWordsCut(topicTag, Text)
-                for w in worldstarList:
-                    msg = {"start": w, "end": w+taglen,
-                           "len": taglen, "type": 1, "data": None}
-                    division.append(msg)
-
-        # 识别超链接
-
-        reg = r'https?:[0-9a-zA-Z.?#&=_@(-/\d]+'
-        url = re.findall(reg, Text)
-        url = list(set(url))
-        if len(url) != 0:
-            for i in url:
-                n = urlparse(i).netloc
-                reg = r'(.*).bilibili.com'
-                if re.match(reg, n) or n == 'b23.tv':
-                    urllen = len(i)
-                    worldstarList = KeyWordsCut(i, Text)
+            if emojis != None:
+                for emoji in emojis:
+                    """表情包分割方案器"""
+                    emojiName = emoji.emoji_name
+                    wlen = len(emojiName)
+                    worldstarList = KeyWordsCut(emojiName, Text)
                     for w in worldstarList:
-                        msg = {"start": w, "end": w+urllen, "len": urllen,
-                               "type": 2, "data": {"control": 5}}
+                        msg = {"start": w, "end": w+wlen, "len": wlen,
+                            "type": 0, "data": {"url": emoji.url, "id": emoji.id}}
                         division.append(msg)
-        del reg, url
 
-        # 排列分割方案，根据分割起点大小排列
-        indexdict = {}
-        for element in division:
-            indexdict[element['start']] = element
-        items = list(indexdict.items())
-        items.sort()
-        NGSS = [value for key, value in items]
+            if topics != None:
+                for topic in topics:
+                    """话题 活动 分割方案器"""
+                    topicTag = f'#{topic.topic_name}#'
+                    taglen = len(topicTag)
+                    worldstarList = KeyWordsCut(topicTag, Text)
+                    for w in worldstarList:
+                        msg = {"start": w, "end": w+taglen,
+                            "len": taglen, "type": 1, "data": None}
+                        division.append(msg)
 
-        # 分割方案生成完毕，这里根据NGSS对字符串分割 开始生成RenderList
-        count = 0
-        RenderList = []
-        pyl = 0
-        while count != len(NGSS):
-            if count == 0 and NGSS[count]['start'] != 0:
-                data = {'type': -1, 'text': Text[0:NGSS[count]['start']]}
+            # 识别超链接
+
+            reg = r'https?:[0-9a-zA-Z.?#&=_@(-/\d]+'
+            url = re.findall(reg, Text)
+            url = list(set(url))
+            if len(url) != 0:
+                for i in url:
+                    n = urlparse(i).netloc
+                    reg = r'(.*).bilibili.com'
+                    if re.match(reg, n) or n == 'b23.tv':
+                        urllen = len(i)
+                        worldstarList = KeyWordsCut(i, Text)
+                        for w in worldstarList:
+                            msg = {"start": w, "end": w+urllen, "len": urllen,
+                                "type": 2, "data": {"control": 5}}
+                            division.append(msg)
+            del reg, url
+
+            # 排列分割方案，根据分割起点大小排列
+            indexdict = {}
+            for element in division:
+                indexdict[element['start']] = element
+            items = list(indexdict.items())
+            items.sort()
+            NGSS = [value for key, value in items]
+
+            # 分割方案生成完毕，这里根据NGSS对字符串分割 开始生成RenderList
+            count = 0
+            RenderList = []
+            pyl = 0
+            while count != len(NGSS):
+                if count == 0 and NGSS[count]['start'] != 0:
+                    data = {'type': -1, 'text': Text[0:NGSS[count]['start']]}
+                    RenderList.append(data)
+
+                if NGSS[count]['type'] == 2 and NGSS[count]['data']['control'] == 2:
+                    data = {
+                        'type': 3, 'text': Text[:NGSS[count]['start']], "data": bsepth + 'element/box.png'}
+                    RenderList.append(data)
+                    data = {'type': NGSS[count]['type'], 'text': Text[NGSS[count]
+                                                                    ['start']+1:NGSS[count]['end']], "data": NGSS[count]['data']}
+                elif NGSS[count]['type'] == 2 and NGSS[count]['data']['control'] == 3:
+                    data = {
+                        'type': 3, 'text': Text[:NGSS[count]['start']], "data": bsepth + 'element/tick.png'}
+                    RenderList.append(data)
+                    data = {'type': NGSS[count]['type'], 'text': Text[NGSS[count]
+                                                                    ['start']+1:NGSS[count]['end']], "data": NGSS[count]['data']}
+                elif NGSS[count]['type'] == 2 and NGSS[count]['data']['control'] == 5:
+                    data = {'type': 3, 'text': '',
+                            "data": bsepth + 'element/link.png'}
+                    RenderList.append(data)
+                    data = {'type': NGSS[count]['type'],
+                            'text': '网页链接', "data": NGSS[count]['data']}
+                else:
+                    data = {'type': NGSS[count]['type'], 'text': Text[NGSS[count]
+                                                                    ['start']-pyl:NGSS[count]['end']-pyl], "data": NGSS[count]['data']}
+
                 RenderList.append(data)
 
-            if NGSS[count]['type'] == 2 and NGSS[count]['data']['control'] == 2:
-                data = {
-                    'type': 3, 'text': Text[:NGSS[count]['start']], "data": bsepth + 'element/box.png'}
-                RenderList.append(data)
-                data = {'type': NGSS[count]['type'], 'text': Text[NGSS[count]
-                                                                  ['start']+1:NGSS[count]['end']], "data": NGSS[count]['data']}
-            elif NGSS[count]['type'] == 2 and NGSS[count]['data']['control'] == 3:
-                data = {
-                    'type': 3, 'text': Text[:NGSS[count]['start']], "data": bsepth + 'element/tick.png'}
-                RenderList.append(data)
-                data = {'type': NGSS[count]['type'], 'text': Text[NGSS[count]
-                                                                  ['start']+1:NGSS[count]['end']], "data": NGSS[count]['data']}
-            elif NGSS[count]['type'] == 2 and NGSS[count]['data']['control'] == 5:
-                data = {'type': 3, 'text': '',
-                        "data": bsepth + 'element/link.png'}
-                RenderList.append(data)
-                data = {'type': NGSS[count]['type'],
-                        'text': '网页链接', "data": NGSS[count]['data']}
-            else:
-                data = {'type': NGSS[count]['type'], 'text': Text[NGSS[count]
-                                                                  ['start']-pyl:NGSS[count]['end']-pyl], "data": NGSS[count]['data']}
+                if count != len(NGSS)-1 and NGSS[count]['end'] != NGSS[count+1]['start']:
+                    end = NGSS[count+1]['start']
+                    data = {'type': -1,
+                            'text': Text[NGSS[count]['end']-pyl:end-pyl]}
+                    RenderList.append(data)
 
-            RenderList.append(data)
+                if count == len(NGSS)-1 and NGSS[count]['end'] != len(Text):
+                    data = {'type': -1, 'text': Text[NGSS[count]['end']:len(Text)]}
+                    RenderList.append(data)
+                count += 1
 
-            if count != len(NGSS)-1 and NGSS[count]['end'] != NGSS[count+1]['start']:
-                end = NGSS[count+1]['start']
-                data = {'type': -1,
-                        'text': Text[NGSS[count]['end']-pyl:end-pyl]}
-                RenderList.append(data)
+            if NGSS == []:
+                RenderList = [{'type': -1, 'text': Text}]
+            del NGSS, Text
+            # TODO 回车识别 /r
+            # 实现换行符的识别与分割
+            for element in RenderList:
+                type = element['type']
+                text = element['text']
+                if type == -1:
+                    if len(text.split('\n')) > 1:
+                        element['text'] = text.split('\n')
+            del type, text, element
 
-            if count == len(NGSS)-1 and NGSS[count]['end'] != len(Text):
-                data = {'type': -1, 'text': Text[NGSS[count]['end']:len(Text)]}
-                RenderList.append(data)
-            count += 1
+            # RenderList 最终样式规定器 计算宽度，分割，细化最初的NGSS
+            START_X, START_Y = (0, 0)
+            SZ = 0
+            FOUNT_SIZE = 30
+            LINE_HIGHT = 15
+            LINE_LIMT = 675
+            rl = []
+            pl = []
+            tl = []
+            for element in RenderList:
+                type = element['type']
+                text = element['text']
+                if type == 0:
+                    if START_X >= LINE_LIMT:
+                        START_X = 0
+                        START_Y += FOUNT_SIZE + LINE_HIGHT + 10
+                    pl.append({"id": element['data']['id'], "d": (
+                        START_X, START_Y), "u": element['data']['url']})
+                    START_X += FOUNT_SIZE + SZ + 10
+                elif type == 3:
+                    tl.append(
+                        {"id": -1, "d": (START_X, START_Y), "u": element['data']})
+                    START_X += FOUNT_SIZE + SZ + 8
+                else:
+                    if isinstance(text, list):
+                        pp = 1
+                        for t in text:
+                            for s in t:
+                                if s in ['\u200d', '\u200b', '\r', '\n']:
+                                    continue
+                                if START_X >= LINE_LIMT:
+                                    START_X = 0
+                                    START_Y += FOUNT_SIZE + LINE_HIGHT
 
-        if NGSS == []:
-            RenderList = [{'type': -1, 'text': Text}]
-        del NGSS, Text
-        # TODO 回车识别 /r
-        # 实现换行符的识别与分割
-        for element in RenderList:
-            type = element['type']
-            text = element['text']
-            if type == -1:
-                if len(text.split('\n')) > 1:
-                    element['text'] = text.split('\n')
-        del type, text, element
+                                if ord(s) in muniMap.keys():
+                                    f = MainFontPath
+                                    wihdt = get_font_render_size(
+                                        f, FOUNT_SIZE, s)[0]
+                                elif ord(s) in euniMap.keys():
+                                    f = EmojiFontPath
+                                    wihdt = FOUNT_SIZE
+                                elif ord(s) in cuniMap.keys():
+                                    f = CODE2000
+                                    wihdt = get_font_render_size(
+                                        f, FOUNT_SIZE, s)[0]
+                                else:
+                                    f = Unifont
+                                    for ppp in fontList:
+                                        try:
+                                            if ord(s) in ppp[0].keys():
+                                                f = ppp[1]
+                                                break
+                                        except:
+                                            pass
+                                    wihdt = get_font_render_size(
+                                        f, FOUNT_SIZE, s)[0]
+                                rl.append(
+                                    {"t": s, "d": (START_X, START_Y), "c": FountColor, "f": f})
+                                START_X += wihdt + SZ
 
-        # RenderList 最终样式规定器 计算宽度，分割，细化最初的NGSS
-        START_X, START_Y = (0, 0)
-        SZ = 0
-        FOUNT_SIZE = 30
-        LINE_HIGHT = 15
-        LINE_LIMT = 675
-        rl = []
-        pl = []
-        tl = []
-        for element in RenderList:
-            type = element['type']
-            text = element['text']
-            if type == 0:
-                if START_X >= LINE_LIMT:
-                    START_X = 0
-                    START_Y += FOUNT_SIZE + LINE_HIGHT + 10
-                pl.append({"id": element['data']['id'], "d": (
-                    START_X, START_Y), "u": element['data']['url']})
-                START_X += FOUNT_SIZE + SZ + 10
-            elif type == 3:
-                tl.append(
-                    {"id": -1, "d": (START_X, START_Y), "u": element['data']})
-                START_X += FOUNT_SIZE + SZ + 8
-            else:
-                if isinstance(text, list):
-                    pp = 1
-                    for t in text:
-                        for s in t:
-                            if s in ['\u200d', '\u200b', '\r', '\n']:
+                            if pp != len(text):
+                                START_X = 0
+                                START_Y += FOUNT_SIZE + LINE_HIGHT
+                            pp += 1
+                    else:
+                        for i in text:
+                            if i in ['\u200d', '\u200b', '\r', '\n']:
                                 continue
                             if START_X >= LINE_LIMT:
                                 START_X = 0
                                 START_Y += FOUNT_SIZE + LINE_HIGHT
+                            if type == -1:
+                                c = FountColor
+                            else:
+                                c = HightLightFountColor
 
-                            if ord(s) in muniMap.keys():
+                            if ord(i) in muniMap.keys():
                                 f = MainFontPath
                                 wihdt = get_font_render_size(
-                                    f, FOUNT_SIZE, s)[0]
-                            elif ord(s) in euniMap.keys():
+                                    f, FOUNT_SIZE, i)[0]
+                            elif ord(i) in euniMap.keys():
                                 f = EmojiFontPath
                                 wihdt = FOUNT_SIZE
-                            elif ord(s) in cuniMap.keys():
+                            elif ord(i) in cuniMap.keys():
                                 f = CODE2000
                                 wihdt = get_font_render_size(
-                                    f, FOUNT_SIZE, s)[0]
+                                    f, FOUNT_SIZE, i)[0]
                             else:
                                 f = Unifont
                                 for ppp in fontList:
                                     try:
-                                        if ord(s) in ppp[0].keys():
+                                        if ord(i) in ppp[0].keys():
                                             f = ppp[1]
                                             break
                                     except:
                                         pass
+
                                 wihdt = get_font_render_size(
-                                    f, FOUNT_SIZE, s)[0]
+                                    f, FOUNT_SIZE, i)[0]
+
                             rl.append(
-                                {"t": s, "d": (START_X, START_Y), "c": FountColor, "f": f})
-                            START_X += wihdt + SZ
+                                {"t": i, "d": (START_X, START_Y), "c": c, "f": f})
+                            START_X += wihdt + SZ     
 
-                        if pp != len(text):
-                            START_X = 0
-                            START_Y += FOUNT_SIZE + LINE_HIGHT
-                        pp += 1
+            Render = Image.new(
+                "RGB", (700, START_Y+FOUNT_SIZE+LINE_HIGHT), Background)
+            img_draw = ImageDraw.Draw(Render)
+            # 正文字体
+            MainFont = ImageFont.truetype(MainFontPath, FOUNT_SIZE)
+            EmojiFont = ImageFont.truetype(EmojiFontPath, 109)
+            print('----------------------------------------------')
+            print(rl,pl,tl)
+            # 文字emoji处理
+            for el in rl:
+                if el['f'] == EmojiFontPath:
+                    emojiRender = Image.new("RGBA", (130, 130), Background)
+                    emg_draw = ImageDraw.Draw(emojiRender)
+                    emg_draw.text((0, 0), el['t'],
+                                font=EmojiFont, embedded_color=True)
+                    emojiRender = emojiRender.resize((30, 30), Image.ANTIALIAS)
+                    Render.paste(
+                        emojiRender, (el['d'][0], el['d'][1]+5), emojiRender)
+                elif el['f'] == MainFont:
+                    img_draw.text(el['d'], el['t'], font=MainFont, fill=el['c'])
                 else:
-                    for i in text:
-                        if i in ['\u200d', '\u200b', '\r', '\n']:
-                            continue
-                        if START_X >= LINE_LIMT:
-                            START_X = 0
-                            START_Y += FOUNT_SIZE + LINE_HIGHT
-                        if type == -1:
-                            c = FountColor
-                        else:
-                            c = HightLightFountColor
+                    try:
+                        oFont = ImageFont.truetype(el['f'], FOUNT_SIZE)
+                        img_draw.text(el['d'], el['t'], font=oFont, fill=el['c'])
+                    except:
+                        print(f"字库中不存在字符{el['t']}，请检查字库是否完整")
+                        oFont = ImageFont.truetype(CODE2000, FOUNT_SIZE)
+                        img_draw.text(el['d'], "⎕", font=oFont, fill=el['c'])
 
-                        if ord(i) in muniMap.keys():
-                            f = MainFontPath
-                            wihdt = get_font_render_size(
-                                f, FOUNT_SIZE, i)[0]
-                        elif ord(i) in euniMap.keys():
-                            f = EmojiFontPath
-                            wihdt = FOUNT_SIZE
-                        elif ord(i) in cuniMap.keys():
-                            f = CODE2000
-                            wihdt = get_font_render_size(
-                                f, FOUNT_SIZE, i)[0]
-                        else:
-                            f = Unifont
-                            for ppp in fontList:
-                                try:
-                                    if ord(i) in ppp[0].keys():
-                                        f = ppp[1]
-                                        break
-                                except:
-                                    pass
+            # ISDO 异步下载表情包
+            # TODO 复用下载后的对象，下载了之后直接调用，就不要在去磁盘里打开了
 
-                            wihdt = get_font_render_size(
-                                f, FOUNT_SIZE, i)[0]
+            # 图片元素处理
+            if len(tl) != 0:
+                for el in tl:
+                    gimg = Image.open(el['u']).resize(
+                        (FOUNT_SIZE+5, FOUNT_SIZE+5), Image.ANTIALIAS).convert('RGBA')
+                    Render.paste(gimg, (el['d'][0], el['d'][1]+5), mask=gimg)
+                del gimg, tl
 
-                        rl.append(
-                            {"t": i, "d": (START_X, START_Y), "c": c, "f": f})
-                        START_X += wihdt + SZ     
+            # 原生表情包处理
+            if len(pl) != 0:
+                # 取表情包图片缓存
+                emojiPicDict = {}
+                tasks = []
+                for emoji in pl:
+                    id = emoji['id']
 
-        Render = Image.new(
-            "RGB", (700, START_Y+FOUNT_SIZE+LINE_HIGHT), Background)
-        img_draw = ImageDraw.Draw(Render)
-        # 正文字体
-        MainFont = ImageFont.truetype(MainFontPath, FOUNT_SIZE)
-        EmojiFont = ImageFont.truetype(EmojiFontPath, 109)
-        print('----------------------------------------------')
-        print(rl,pl,tl)
-        # 文字emoji处理
-        for el in rl:
-            if el['f'] == EmojiFontPath:
-                emojiRender = Image.new("RGBA", (130, 130), Background)
-                emg_draw = ImageDraw.Draw(emojiRender)
-                emg_draw.text((0, 0), el['t'],
-                              font=EmojiFont, embedded_color=True)
-                emojiRender = emojiRender.resize((30, 30), Image.ANTIALIAS)
-                Render.paste(
-                    emojiRender, (el['d'][0], el['d'][1]+5), emojiRender)
-            elif el['f'] == MainFont:
-                img_draw.text(el['d'], el['t'], font=MainFont, fill=el['c'])
-            else:
-                try:
-                    oFont = ImageFont.truetype(el['f'], FOUNT_SIZE)
-                    img_draw.text(el['d'], el['t'], font=oFont, fill=el['c'])
-                except:
-                    print(f"字库中不存在字符{el['t']}，请检查字库是否完整")
-                    oFont = ImageFont.truetype(CODE2000, FOUNT_SIZE)
-                    img_draw.text(el['d'], "⎕", font=oFont, fill=el['c'])
+                    imgpath = f'{self.tmp_path}emoji/{id}.png'
 
-        # ISDO 异步下载表情包
-        # TODO 复用下载后的对象，下载了之后直接调用，就不要在去磁盘里打开了
+                    if id in link.EmojiImg:
+                        # 下载缓存中存在图片
+                        emojiPicDict[id] = link.EmojiImg[id]
+                    elif self.tmp_path != False and os.path.exists(imgpath):
+                        # 本地硬盘中存在
+                        emojiPicDict[id] = Image.open(imgpath)
+                    else:
+                        tasks.append(link.getPage(emoji['u'], 2, id))
 
-        # 图片元素处理
-        if len(tl) != 0:
-            for el in tl:
-                gimg = Image.open(el['u']).resize(
-                    (FOUNT_SIZE+5, FOUNT_SIZE+5), Image.ANTIALIAS).convert('RGBA')
-                Render.paste(gimg, (el['d'][0], el['d'][1]+5), mask=gimg)
-            del gimg, tl
+                if len(tasks) != 0:
+                    imgs = await asyncio.gather(*tasks)
+                    for img in imgs:
+                        pic, id = img
+                        if self.tmp_path != False:
+                            imgpath = f'{self.tmp_path}emoji/{id}.png'
+                            pic.save(imgpath)
+                        emojiPicDict[id] = pic
 
-        # 原生表情包处理
-        if len(pl) != 0:
-            # 取表情包图片缓存
-            emojiPicDict = {}
-            tasks = []
-            for emoji in pl:
-                id = emoji['id']
+                for emoji in pl:
+                    id = emoji['id']
+                    emimg = emojiPicDict[id].resize(
+                        (FOUNT_SIZE+10, FOUNT_SIZE+10), Image.ANTIALIAS).convert('RGBA')
 
-                imgpath = f'{self.tmp_path}emoji/{id}.png'
+                    Render.paste(emimg, emoji['d'], mask=emimg)
 
-                if id in link.EmojiImg:
-                    # 下载缓存中存在图片
-                    emojiPicDict[id] = link.EmojiImg[id]
-                elif self.tmp_path != False and os.path.exists(imgpath):
-                    # 本地硬盘中存在
-                    emojiPicDict[id] = Image.open(imgpath)
-                else:
-                    tasks.append(link.getPage(emoji['u'], 2, id))
-
-            if len(tasks) != 0:
-                imgs = await asyncio.gather(*tasks)
-                for img in imgs:
-                    pic, id = img
-                    if self.tmp_path != False:
-                        imgpath = f'{self.tmp_path}emoji/{id}.png'
-                        pic.save(imgpath)
-                    emojiPicDict[id] = pic
-
-            for emoji in pl:
-                id = emoji['id']
-                emimg = emojiPicDict[id].resize(
-                    (FOUNT_SIZE+10, FOUNT_SIZE+10), Image.ANTIALIAS).convert('RGBA')
-
-                Render.paste(emimg, emoji['d'], mask=emimg)
-
-            del pl, tasks
-        return Render
+                del pl, tasks
+            return Render
+        except Exception as e:
+            print(f"{self.DynamicId}渲染错误!,错误是：{e}")
+            return None,e
+        
 
     async def FunctionBlock(self, type, card, background="#FFFFFF"):
         """
