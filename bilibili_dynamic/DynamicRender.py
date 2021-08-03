@@ -241,23 +241,27 @@ class DynamicPictureRendering:
 
         """
         # 找文字块
-        if card.item.description != None:
-            Text = card.item.description
-        elif card.item.content != None:
-            Text = card.item.content
+        if card.item != None:
+            if card.item.description != None:
+                Text = card.item.description
+            elif card.item.content != None:
+                Text = card.item.content
+
         elif card.dynamic != None and card.dynamic != "":
             Text = card.dynamic
         elif card.vest != None:
             Text = card.vest.content
         else:
             return None
+
+
         # 找艾特 抽奖 投票
-        if card.item.at_control != None and card.item.at_control != "":
-            at_control = card.item.at_control
-        elif card.item.ctrl != None and card.item.ctrl != []:
-            at_control = card.item.ctrl
-        else:
-            at_control = None
+        at_control = None
+        if card.item != None:
+            if card.item.at_control != None and card.item.at_control != "":
+                at_control = card.item.at_control
+            elif card.item.ctrl != None and card.item.ctrl != []:
+                at_control = card.item.ctrl
 
         # 表情包 话题标签
         if display.topic_info != None:
