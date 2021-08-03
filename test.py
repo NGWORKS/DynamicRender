@@ -18,7 +18,7 @@ async def test():
         # 您可以在实例化的类中的 ReprenderIMG 获得图片对象
         Render.ReprenderIMG.show()
         i += 1
-        if i == 5:
+        if i == 1:
             break
         
 
