@@ -29,7 +29,6 @@ license: MIT.
 """
 # 数据验证
 from asyncio.tasks import Task
-from asyncio.windows_events import PipeServer
 from .format import DynamicCard, Dynamic, Display
 # 初始化
 from .initialize import bsepth, muniMap, euniMap, cuniMap, workpath, link,NotoColorEmoji, NotoSansCJK, CODE2000, Unifont, fontList
