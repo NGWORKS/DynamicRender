@@ -255,13 +255,15 @@ class DynamicPictureRendering:
                 return None
 
 
-            # 找艾特 抽奖 投票
+            # 找艾特 抽奖 投票 干饭
             at_control = None
+            ctrls = None
             if card.item != None:
                 if card.item.at_control != None and card.item.at_control != "":
                     at_control = card.item.at_control
-                elif card.item.ctrl != None and card.item.ctrl != []:
-                    at_control = card.item.ctrl
+
+                if card.item.ctrl != None and card.item.ctrl != []:
+                    ctrls = card.item.ctrl
 
             # 表情包 话题标签
             if display.topic_info != None:
@@ -279,7 +281,7 @@ class DynamicPictureRendering:
             division = []
             if at_control != None:
                 for control in at_control:
-                    """艾特 抽奖 投票分割方案器"""
+                    """艾特 分割方案器"""
 
                     if control['type'] != 1:
                         # 如果不是普通的艾特信息 艾特 1 互动抽奖 2 投票 3
@@ -287,6 +289,18 @@ class DynamicPictureRendering:
                     msg = {"start": control['location'], "end": control['location']+control['length'],
                         "len": control['length'], "type": 2, "data": {"control": control['type']}}
                     division.append(msg)
+            
+            if ctrls != None:
+                for ctrl in ctrls:
+                    """淘宝 艾特 抽奖 投票分割方案器"""
+
+                    if ctrl['type'] != 1:
+                        # 如果不是普通的艾特信息 艾特 1 互动抽奖 2 投票 3
+                        ctrl['length'] = int(ctrl['data'])
+                    msg = {"start": ctrl['location'], "end": ctrl['location']+ctrl['length'],
+                        "len": ctrl['length'], "type": 2, "data": {"control": ctrl['type']}}
+                    division.append(msg)
+
 
             if emojis != None:
                 for emoji in emojis:
@@ -354,6 +368,12 @@ class DynamicPictureRendering:
                 elif NGSS[count]['type'] == 2 and NGSS[count]['data']['control'] == 3:
                     data = {
                         'type': 3, 'text': Text[:NGSS[count]['start']], "data": bsepth + 'element/tick.png'}
+                    RenderList.append(data)
+                    data = {'type': NGSS[count]['type'], 'text': Text[NGSS[count]
+                                                                    ['start']+1:NGSS[count]['end']], "data": NGSS[count]['data']}
+                elif NGSS[count]['type'] == 2 and NGSS[count]['data']['control'] == 4:
+                    data = {
+                        'type': 3, 'text': Text[:NGSS[count]['start']], "data": bsepth + 'element/tb.png'}
                     RenderList.append(data)
                     data = {'type': NGSS[count]['type'], 'text': Text[NGSS[count]
                                                                     ['start']+1:NGSS[count]['end']], "data": NGSS[count]['data']}
@@ -503,8 +523,6 @@ class DynamicPictureRendering:
             # 正文字体
             MainFont = ImageFont.truetype(MainFontPath, FOUNT_SIZE)
             EmojiFont = ImageFont.truetype(EmojiFontPath, 109)
-            print('----------------------------------------------')
-            print(rl,pl,tl)
             # 文字emoji处理
             for el in rl:
                 if el['f'] == EmojiFontPath:
@@ -576,7 +594,7 @@ class DynamicPictureRendering:
             return Render
         except Exception as e:
             print(f"{self.DynamicId}渲染错误!,错误是：{e}")
-            return None,e
+            return None
         
 
     async def FunctionBlock(self, type, card, background="#FFFFFF"):
