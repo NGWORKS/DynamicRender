@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "BiliBili_dynamic"
-version = "0.0.8-b"
+version = "0.0.9b0"
 description = "将哔哩哔哩返回的数据渲染为类似与B站APP官方的分享图片"
 authors = ["NGWORKS"]
 license = "GNU AGPLv3"
