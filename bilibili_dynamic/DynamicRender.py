@@ -25,27 +25,26 @@ BUG emoji不被字符计数，导致偏差。（可能占用字符数目不一�
 
 copyright: (c) 2021 by NGWORKS.
 
-license: MIT.
 """
-# 数据验证
-from asyncio.tasks import Task
-from .format import DynamicCard, Dynamic, Display
-# 初始化
-from .initialize import bsepth, muniMap, euniMap, cuniMap, workpath, link,NotoColorEmoji, NotoSansCJK, CODE2000, Unifont, fontList
-# 文字工具
-from .textTools import get_font_render_size, KeyWordsCut, AoutLine, makeQRcode
-
-from .textRender import renderStely
-
-import os
-import aiohttp
 import asyncio
-import time
+import os
 import re
-from PIL import Image, ImageFont, ImageDraw
-from urllib.parse import urlparse
+import time
+from asyncio.tasks import Task
 from io import BytesIO
-# 静态资源图片
+from urllib.parse import urlparse
+
+import aiohttp
+from PIL import Image, ImageDraw, ImageFont
+from requests.api import head
+
+from .format import Display, Dynamic, DynamicCard
+from .initialize import (CODE2000, NotoColorEmoji, NotoSansCJK, Unifont,
+                         bsepth, cuniMap, euniMap, fontList, link, muniMap,
+                         workpath)
+from .textRender import renderStely
+from .textTools import AoutLine, KeyWordsCut, get_font_render_size, makeQRcode
+
 faceMark = Image.open(bsepth + 'element/hm.png')
 userauth = Image.open(bsepth + 'element/user-auth.png')
 
@@ -254,7 +253,6 @@ class DynamicPictureRendering:
             else:
                 return None
 
-
             # 找艾特 抽奖 投票 干饭
             at_control = None
             ctrls = None
@@ -287,9 +285,9 @@ class DynamicPictureRendering:
                         # 如果不是普通的艾特信息 艾特 1 互动抽奖 2 投票 3
                         control['length'] = int(control['data'])
                     msg = {"start": control['location'], "end": control['location']+control['length'],
-                        "len": control['length'], "type": 2, "data": {"control": control['type']}}
+                           "len": control['length'], "type": 2, "data": {"control": control['type']}}
                     division.append(msg)
-            
+
             if ctrls != None:
                 for ctrl in ctrls:
                     """淘宝 艾特 抽奖 投票分割方案器"""
@@ -298,9 +296,8 @@ class DynamicPictureRendering:
                         # 如果不是普通的艾特信息 艾特 1 互动抽奖 2 投票 3
                         ctrl['length'] = int(ctrl['data'])
                     msg = {"start": ctrl['location'], "end": ctrl['location']+ctrl['length'],
-                        "len": ctrl['length'], "type": 2, "data": {"control": ctrl['type']}}
+                           "len": ctrl['length'], "type": 2, "data": {"control": ctrl['type']}}
                     division.append(msg)
-
 
             if emojis != None:
                 for emoji in emojis:
@@ -310,7 +307,7 @@ class DynamicPictureRendering:
                     worldstarList = KeyWordsCut(emojiName, Text)
                     for w in worldstarList:
                         msg = {"start": w, "end": w+wlen, "len": wlen,
-                            "type": 0, "data": {"url": emoji.url, "id": emoji.id}}
+                               "type": 0, "data": {"url": emoji.url, "id": emoji.id}}
                         division.append(msg)
 
             if topics != None:
@@ -321,7 +318,7 @@ class DynamicPictureRendering:
                     worldstarList = KeyWordsCut(topicTag, Text)
                     for w in worldstarList:
                         msg = {"start": w, "end": w+taglen,
-                            "len": taglen, "type": 1, "data": None}
+                               "len": taglen, "type": 1, "data": None}
                         division.append(msg)
 
             # 识别超链接
@@ -338,7 +335,7 @@ class DynamicPictureRendering:
                         worldstarList = KeyWordsCut(i, Text)
                         for w in worldstarList:
                             msg = {"start": w, "end": w+urllen, "len": urllen,
-                                "type": 2, "data": {"control": 5}}
+                                   "type": 2, "data": {"control": 5}}
                             division.append(msg)
             del reg, url
 
@@ -364,19 +361,19 @@ class DynamicPictureRendering:
                         'type': 3, 'text': Text[:NGSS[count]['start']], "data": bsepth + 'element/box.png'}
                     RenderList.append(data)
                     data = {'type': NGSS[count]['type'], 'text': Text[NGSS[count]
-                                                                    ['start']+1:NGSS[count]['end']], "data": NGSS[count]['data']}
+                                                                      ['start']+1:NGSS[count]['end']], "data": NGSS[count]['data']}
                 elif NGSS[count]['type'] == 2 and NGSS[count]['data']['control'] == 3:
                     data = {
                         'type': 3, 'text': Text[:NGSS[count]['start']], "data": bsepth + 'element/tick.png'}
                     RenderList.append(data)
                     data = {'type': NGSS[count]['type'], 'text': Text[NGSS[count]
-                                                                    ['start']+1:NGSS[count]['end']], "data": NGSS[count]['data']}
+                                                                      ['start']+1:NGSS[count]['end']], "data": NGSS[count]['data']}
                 elif NGSS[count]['type'] == 2 and NGSS[count]['data']['control'] == 4:
                     data = {
                         'type': 3, 'text': Text[:NGSS[count]['start']], "data": bsepth + 'element/tb.png'}
                     RenderList.append(data)
                     data = {'type': NGSS[count]['type'], 'text': Text[NGSS[count]
-                                                                    ['start']+1:NGSS[count]['end']], "data": NGSS[count]['data']}
+                                                                      ['start']+1:NGSS[count]['end']], "data": NGSS[count]['data']}
                 elif NGSS[count]['type'] == 2 and NGSS[count]['data']['control'] == 5:
                     data = {'type': 3, 'text': '',
                             "data": bsepth + 'element/link.png'}
@@ -385,7 +382,7 @@ class DynamicPictureRendering:
                             'text': '网页链接', "data": NGSS[count]['data']}
                 else:
                     data = {'type': NGSS[count]['type'], 'text': Text[NGSS[count]
-                                                                    ['start']-pyl:NGSS[count]['end']-pyl], "data": NGSS[count]['data']}
+                                                                      ['start']-pyl:NGSS[count]['end']-pyl], "data": NGSS[count]['data']}
 
                 RenderList.append(data)
 
@@ -396,14 +393,14 @@ class DynamicPictureRendering:
                     RenderList.append(data)
 
                 if count == len(NGSS)-1 and NGSS[count]['end'] != len(Text):
-                    data = {'type': -1, 'text': Text[NGSS[count]['end']:len(Text)]}
+                    data = {'type': -1,
+                            'text': Text[NGSS[count]['end']:len(Text)]}
                     RenderList.append(data)
                 count += 1
 
             if NGSS == []:
                 RenderList = [{'type': -1, 'text': Text}]
             del NGSS, Text
-            # TODO 回车识别 /r
             # 实现换行符的识别与分割
             for element in RenderList:
                 type = element['type']
@@ -414,14 +411,11 @@ class DynamicPictureRendering:
             del type, text, element
 
             # RenderList 最终样式规定器 计算宽度，分割，细化最初的NGSS
-            START_X, START_Y = (0, 0)
-            SZ = 0
-            FOUNT_SIZE = 30
-            LINE_HIGHT = 15
-            LINE_LIMT = 675
-            rl = []
-            pl = []
-            tl = []
+            # 第一个起点的起点 x,y 字符间距
+            START_X, START_Y, SZ = (0, 0, 0)
+            # 字符大小  行距  一行最长限制
+            FOUNT_SIZE, LINE_HIGHT, LINE_LIMT = (30, 15, 675)
+            rl, pl, tl = ([], [], [])
             for element in RenderList:
                 type = element['type']
                 text = element['text']
@@ -515,10 +509,9 @@ class DynamicPictureRendering:
 
                             rl.append(
                                 {"t": i, "d": (START_X, START_Y), "c": c, "f": f})
-                            START_X += wihdt + SZ     
+                            START_X += wihdt + SZ
 
-            Render = Image.new(
-                "RGB", (700, START_Y+FOUNT_SIZE+LINE_HIGHT), Background)
+            Render = Image.new("RGB", (700, START_Y+FOUNT_SIZE+LINE_HIGHT), Background)
             img_draw = ImageDraw.Draw(Render)
             # 正文字体
             MainFont = ImageFont.truetype(MainFontPath, FOUNT_SIZE)
@@ -529,16 +522,18 @@ class DynamicPictureRendering:
                     emojiRender = Image.new("RGBA", (130, 130), Background)
                     emg_draw = ImageDraw.Draw(emojiRender)
                     emg_draw.text((0, 0), el['t'],
-                                font=EmojiFont, embedded_color=True)
+                                  font=EmojiFont, embedded_color=True)
                     emojiRender = emojiRender.resize((30, 30), Image.ANTIALIAS)
                     Render.paste(
                         emojiRender, (el['d'][0], el['d'][1]+5), emojiRender)
                 elif el['f'] == MainFont:
-                    img_draw.text(el['d'], el['t'], font=MainFont, fill=el['c'])
+                    img_draw.text(el['d'], el['t'],
+                                  font=MainFont, fill=el['c'])
                 else:
                     try:
                         oFont = ImageFont.truetype(el['f'], FOUNT_SIZE)
-                        img_draw.text(el['d'], el['t'], font=oFont, fill=el['c'])
+                        img_draw.text(el['d'], el['t'],
+                                      font=oFont, fill=el['c'])
                     except:
                         print(f"字库中不存在字符{el['t']}，请检查字库是否完整")
                         oFont = ImageFont.truetype(CODE2000, FOUNT_SIZE)
@@ -595,7 +590,6 @@ class DynamicPictureRendering:
         except Exception as e:
             print(f"{self.DynamicId}渲染错误!,错误是：{e}")
             return None
-        
 
     async def FunctionBlock(self, type, card, background="#FFFFFF"):
         """
@@ -608,10 +602,10 @@ class DynamicPictureRendering:
         nicknameFont = ImageFont.truetype(ttf_path, 25)
         sFont = ImageFont.truetype(ttf_path, 20)
         # TODO 4302 付费课程
-        # 投稿视频 直播 电视剧 
-        if type in [4098,4099,4101,4308,8,4098,512,4302]:
+        # 投稿视频 直播 电视剧
+        if type in [4098, 4099, 4101, 4308, 8, 4098, 512, 4302]:
             # 电视剧-电影-番剧/国漫-纪录片
-            if type in [4098,4099,512,4101,4302]:
+            if type in [4098, 4099, 512, 4101, 4302]:
                 pic = card.cover + '@480w.webp'
                 title = card.new_desc
                 if not card.new_desc:
@@ -1003,3 +997,15 @@ class DynamicPictureRendering:
         # img.save('t.jpg')
         # img.save(f'./test/{self.DynamicId}.jpg')
         self.ReprenderIMG = img
+
+
+# def main(Dynamicdata):
+#     DynamicData = DynamicCard(**Dynamicdata)
+#     DynamicId = DynamicData.desc.dynamic_id
+#     card = DynamicData.card
+#     desc = DynamicData.desc
+#     display = DynamicData.display
+#     head = ThreadCli(headRendering,(desc,),"face_threading")
+#     head.start()
+#     head.join()
+#     return head.getResult()

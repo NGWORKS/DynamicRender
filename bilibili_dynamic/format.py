@@ -192,4 +192,11 @@ class DynamicDetail(BaseModel):
     code: int
     data: DynamicData
 
+class division(BaseModel):
+    data: Union[Json, None]
+    start: int
+    end: int
+    len: int
+    type: int
+
 
