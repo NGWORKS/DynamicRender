@@ -32,3 +32,15 @@ class Networks:
                 return pic,3
             else:
                 return pic
+
+# 图片缓存字典
+pictmp = {}
+import requests
+
+# 使用requests 下载图片 供多线程使用
+def request_img(url):
+    response = requests.get(url)
+    # 获取的文本实际上是图片的二进制文本
+    img = BytesIO(response.content)
+    pic = Image.open(img)
+    return pic

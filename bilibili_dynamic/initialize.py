@@ -30,8 +30,8 @@ muniMap = TTFont(NotoSansCJK)['cmap'].tables[0].ttFont.getBestCmap()
 euniMap = TTFont(NotoColorEmoji)['cmap'].tables[0].ttFont.getBestCmap()
 cuniMap = TTFont(CODE2000)['cmap'].tables[0].ttFont.getBestCmap()
 
-tfl = [[f.fname, f.name, f.style] for f in fontManager.ttflist]
-f = fontManager.ttflist
+# tfl = [[f.fname, f.name, f.style] for f in fontManager.ttflist]
+# f = fontManager.ttflist
 fontList = []
 
 # 加入后备字体
@@ -39,17 +39,17 @@ fontList.append([TTFont(arial)['cmap'].tables[0].ttFont.getBestCmap(), arial])
 fontList.append([TTFont(himalaya)['cmap'].tables[0].ttFont.getBestCmap(), himalaya])
 
 # 加入系统所有字体
-for f in tfl:
-    f_path = Path(f[0])
-    try:
-        if f_path.suffix not in ['.ttf', '.TTF', '.otf', '.OTF']:
-            print(f'字体{f[0]}不符合样式需求，已经排除。')
-            continue
-        oofont = TTFont(f[0])
-        oouniMap = oofont['cmap'].tables[0].ttFont.getBestCmap()
-        fontList.append([oouniMap, f[0]])
-    except:
-        print(f'导入{f[0]}失败，无需处理')
+# for f in tfl:
+#     f_path = Path(f[0])
+#     try:
+#         if f_path.suffix not in ['.ttf', '.TTF', '.otf', '.OTF']:
+#             print(f'字体{f[0]}不符合样式需求，已经排除。')
+#             continue
+#         oofont = TTFont(f[0])
+#         oouniMap = oofont['cmap'].tables[0].ttFont.getBestCmap()
+#         fontList.append([oouniMap, f[0]])
+#     except:
+#         print(f'导入{f[0]}失败，无需处理')
 
 
 
