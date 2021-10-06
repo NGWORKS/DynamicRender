@@ -25,7 +25,6 @@ BUG emoji不被字符计数，导致偏差。（可能占用字符数目不一�
 
 copyright: (c) 2021 by NGWORKS.
 
-license: MIT.
 """
 # 数据验证
 from asyncio.tasks import Task
@@ -363,36 +362,29 @@ class DynamicPictureRendering:
                     data = {
                         'type': 3, 'text': Text[:NGSS[count]['start']], "data": bsepth + 'element/box.png'}
                     RenderList.append(data)
-                    data = {'type': NGSS[count]['type'], 'text': Text[NGSS[count]
-                                                                    ['start']+1:NGSS[count]['end']], "data": NGSS[count]['data']}
+                    data = {'type': NGSS[count]['type'], 'text': Text[NGSS[count]['start']+1:NGSS[count]['end']], "data": NGSS[count]['data']}
                 elif NGSS[count]['type'] == 2 and NGSS[count]['data']['control'] == 3:
                     data = {
                         'type': 3, 'text': Text[:NGSS[count]['start']], "data": bsepth + 'element/tick.png'}
                     RenderList.append(data)
-                    data = {'type': NGSS[count]['type'], 'text': Text[NGSS[count]
-                                                                    ['start']+1:NGSS[count]['end']], "data": NGSS[count]['data']}
+                    data = {'type': NGSS[count]['type'], 'text': Text[NGSS[count]['start']+1:NGSS[count]['end']], "data": NGSS[count]['data']}
                 elif NGSS[count]['type'] == 2 and NGSS[count]['data']['control'] == 4:
                     data = {
                         'type': 3, 'text': Text[:NGSS[count]['start']], "data": bsepth + 'element/tb.png'}
                     RenderList.append(data)
-                    data = {'type': NGSS[count]['type'], 'text': Text[NGSS[count]
-                                                                    ['start']+1:NGSS[count]['end']], "data": NGSS[count]['data']}
+                    data = {'type': NGSS[count]['type'], 'text': Text[NGSS[count]['start']+1:NGSS[count]['end']], "data": NGSS[count]['data']}
                 elif NGSS[count]['type'] == 2 and NGSS[count]['data']['control'] == 5:
-                    data = {'type': 3, 'text': '',
-                            "data": bsepth + 'element/link.png'}
+                    data = {'type': 3, 'text': '',"data": bsepth + 'element/link.png'}
                     RenderList.append(data)
-                    data = {'type': NGSS[count]['type'],
-                            'text': '网页链接', "data": NGSS[count]['data']}
+                    data = {'type': NGSS[count]['type'],'text': '网页链接', "data": NGSS[count]['data']}
                 else:
-                    data = {'type': NGSS[count]['type'], 'text': Text[NGSS[count]
-                                                                    ['start']-pyl:NGSS[count]['end']-pyl], "data": NGSS[count]['data']}
+                    data = {'type': NGSS[count]['type'], 'text': Text[NGSS[count]['start']-pyl:NGSS[count]['end']-pyl], "data": NGSS[count]['data']}
 
                 RenderList.append(data)
 
                 if count != len(NGSS)-1 and NGSS[count]['end'] != NGSS[count+1]['start']:
                     end = NGSS[count+1]['start']
-                    data = {'type': -1,
-                            'text': Text[NGSS[count]['end']-pyl:end-pyl]}
+                    data = {'type': -1,'text': Text[NGSS[count]['end']-pyl:end-pyl]}
                     RenderList.append(data)
 
                 if count == len(NGSS)-1 and NGSS[count]['end'] != len(Text):
@@ -403,7 +395,6 @@ class DynamicPictureRendering:
             if NGSS == []:
                 RenderList = [{'type': -1, 'text': Text}]
             del NGSS, Text
-            # TODO 回车识别 /r
             # 实现换行符的识别与分割
             for element in RenderList:
                 type = element['type']
@@ -414,14 +405,11 @@ class DynamicPictureRendering:
             del type, text, element
 
             # RenderList 最终样式规定器 计算宽度，分割，细化最初的NGSS
-            START_X, START_Y = (0, 0)
-            SZ = 0
-            FOUNT_SIZE = 30
-            LINE_HIGHT = 15
-            LINE_LIMT = 675
-            rl = []
-            pl = []
-            tl = []
+            # 第一个起点的起点 x,y 字符间距
+            START_X, START_Y, SZ = (0, 0, 0)
+            # 字符大小  行距  一行最长限制
+            FOUNT_SIZE, LINE_HIGHT, LINE_LIMT = (30, 15, 675)
+            rl ,pl ,tl = ([], [] ,[])
             for element in RenderList:
                 type = element['type']
                 text = element['text']
@@ -429,8 +417,7 @@ class DynamicPictureRendering:
                     if START_X >= LINE_LIMT:
                         START_X = 0
                         START_Y += FOUNT_SIZE + LINE_HIGHT + 10
-                    pl.append({"id": element['data']['id'], "d": (
-                        START_X, START_Y), "u": element['data']['url']})
+                    pl.append({"id": element['data']['id'], "d": (START_X, START_Y), "u": element['data']['url']})
                     START_X += FOUNT_SIZE + SZ + 10
                 elif type == 3:
                     tl.append(
@@ -449,15 +436,13 @@ class DynamicPictureRendering:
 
                                 if ord(s) in muniMap.keys():
                                     f = MainFontPath
-                                    wihdt = get_font_render_size(
-                                        f, FOUNT_SIZE, s)[0]
+                                    wihdt = get_font_render_size(f, FOUNT_SIZE, s)[0]
                                 elif ord(s) in euniMap.keys():
                                     f = EmojiFontPath
                                     wihdt = FOUNT_SIZE
                                 elif ord(s) in cuniMap.keys():
                                     f = CODE2000
-                                    wihdt = get_font_render_size(
-                                        f, FOUNT_SIZE, s)[0]
+                                    wihdt = get_font_render_size(f, FOUNT_SIZE, s)[0]
                                 else:
                                     f = Unifont
                                     for ppp in fontList:
@@ -467,10 +452,8 @@ class DynamicPictureRendering:
                                                 break
                                         except:
                                             pass
-                                    wihdt = get_font_render_size(
-                                        f, FOUNT_SIZE, s)[0]
-                                rl.append(
-                                    {"t": s, "d": (START_X, START_Y), "c": FountColor, "f": f})
+                                    wihdt = get_font_render_size(f, FOUNT_SIZE, s)[0]
+                                rl.append({"t": s, "d": (START_X, START_Y), "c": FountColor, "f": f})
                                 START_X += wihdt + SZ
 
                             if pp != len(text):
