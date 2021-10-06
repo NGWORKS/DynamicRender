@@ -1,6 +1,7 @@
 # -*- encoding: utf-8 -*-
 from bilibili_dynamic import DynamicRender,textTools,initialize
 import asyncio
+from bilibili_dynamic.dy import main
 
 # 导入数据示例
 from dylist import dylist
@@ -25,4 +26,10 @@ async def test():
 # 运行协程函数需要在事件循环中运行
 loop = asyncio.get_event_loop()
 loop.run_until_complete(test())
+# i = 0
+# for element in dylist:
 
+#     img= main(element)
+#     i += 1
+#     if i == 1:
+#         break

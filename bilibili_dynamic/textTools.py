@@ -1,8 +1,20 @@
 # -*- encoding: utf-8 -*-
-
+from fontTools.ttLib.ttFont import TTFont
 from PIL import ImageFont
+from .tmppath import bsepth
 import  qrcode
-from .initialize import NotoSansCJK
+import re
+
+NotoSansCJK = bsepth + r'typeface/NotoSansCJKsc-Regular.otf'
+NotoColorEmoji = bsepth + r'typeface/NotoColorEmoji.ttf'
+CODE2000 = bsepth + r'typeface/CODE2000.ttf'
+Unifont = bsepth + r'typeface/Unifont.ttf.ttf'
+arial = bsepth + r'typeface/reserve/arial.ttf'
+himalaya = bsepth + r'typeface/reserve/himalaya.ttf'
+
+muniMap = TTFont(NotoSansCJK)['cmap'].tables[0].ttFont.getBestCmap()
+euniMap = TTFont(NotoColorEmoji)['cmap'].tables[0].ttFont.getBestCmap()
+cuniMap = TTFont(CODE2000)['cmap'].tables[0].ttFont.getBestCmap()
 
 def get_font_render_size(FOUNT, fontsize, text):
     """
@@ -10,6 +22,8 @@ def get_font_render_size(FOUNT, fontsize, text):
     :param data: 字库 字体大小 字符对象
     :returns: 字符的 width, height
     """
+    if re.match('[\u4E00-\u9FA5]+', text):
+        return (fontsize,None)
     try:
         font = ImageFont.truetype(FOUNT, fontsize, 0)
         width, height = font.getsize(text)
