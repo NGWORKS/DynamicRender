@@ -19,8 +19,7 @@ def main(Dynamicdata):
     t.join()
     head = head.getResult()
     tesxt = t.getResult()
-    hblist = []
-    hblist.append([head, (0, 0)])
+    hblist = [[head, (0, 0)]]
     h = head.size[1]
     hblist.append([tesxt, (0, h)])
     h += tesxt.size[1]

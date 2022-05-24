@@ -5,12 +5,12 @@ from .tmppath import bsepth
 import  qrcode
 import re
 
-NotoSansCJK = bsepth + r'typeface/NotoSansCJKsc-Regular.otf'
-NotoColorEmoji = bsepth + r'typeface/NotoColorEmoji.ttf'
-CODE2000 = bsepth + r'typeface/CODE2000.ttf'
-Unifont = bsepth + r'typeface/Unifont.ttf.ttf'
-arial = bsepth + r'typeface/reserve/arial.ttf'
-himalaya = bsepth + r'typeface/reserve/himalaya.ttf'
+NotoSansCJK = f'{bsepth}typeface/NotoSansCJKsc-Regular.otf'
+NotoColorEmoji = f'{bsepth}typeface/NotoColorEmoji.ttf'
+CODE2000 = f'{bsepth}typeface/CODE2000.ttf'
+Unifont = f'{bsepth}typeface/Unifont.ttf.ttf'
+arial = f'{bsepth}typeface/reserve/arial.ttf'
+himalaya = f'{bsepth}typeface/reserve/himalaya.ttf'
 
 muniMap = TTFont(NotoSansCJK)['cmap'].tables[0].ttFont.getBestCmap()
 euniMap = TTFont(NotoColorEmoji)['cmap'].tables[0].ttFont.getBestCmap()
@@ -47,13 +47,12 @@ def KeyWordsCut(KeyWord, paragraph):
         if l == -1:
             break
         paragraph = paragraph[l+keywordslen:]
-        if len(wordsList) != 0:
+        if wordsList:
             b = wordsList[i]
             l = b + l + keywordslen
             i += 1
         wordsList.append(l)
-    wordsList = list(set(wordsList))
-    wordsList.sort()
+    wordsList = sorted(set(wordsList))
     return wordsList
 
 def AoutLine(limt, text, size, color='#000000', fount=NotoSansCJK, x=15, y=0):

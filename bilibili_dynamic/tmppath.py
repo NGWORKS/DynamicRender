@@ -1,25 +1,21 @@
 import os
 
 workpath = os.getcwd()
-bsepth = os.path.dirname(__file__) + '/'
+bsepth = f'{os.path.dirname(__file__)}/'
 
 def set_tmp(tmp=None):
     if tmp == False:
         return False
 
-    if tmp is None:
-        path = './tmp'
-    else:
-        path = tmp
-
+    path = './tmp' if tmp is None else tmp
     if os.path.isabs(path):
         tmp = path
     else:
         os.chdir(workpath)
         tmp = os.path.abspath(path)
-    tmp = tmp + '/'
+    tmp = f'{tmp}/'
     tmp_path = tmp
-    pathlist = [tmp_path + 'face/', tmp_path + 'pendant/', tmp_path + 'emoji/']
+    pathlist = [f'{tmp_path}face/', f'{tmp_path}pendant/', f'{tmp_path}emoji/']
     for p in pathlist:
         if not os.path.isdir(p):
             os.makedirs(p)

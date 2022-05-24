@@ -104,8 +104,8 @@ class Lines:
             line.width = max(line.width, phrase.width)
             line = self.new_line()
             phrase = line.phrase
-            if char == '\n':
-                return
+        if char == '\n':
+            return
         if not phrase.font:
             phrase.font = font
         if phrase.font != font:

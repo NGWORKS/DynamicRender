@@ -7,6 +7,7 @@ copyright: (c) 2021 by NGWORKS.
 
 license: MIT.
 """
+
 import os
 from fontTools.ttLib.ttFont import TTFont
 from matplotlib.font_manager import fontManager
@@ -16,14 +17,14 @@ from .network import Networks
 link = Networks()
 
 workpath = os.getcwd()
-bsepth = os.path.dirname(__file__) + '/'
+bsepth = f'{os.path.dirname(__file__)}/'
 
-NotoSansCJK = bsepth + r'typeface/NotoSansCJKsc-Regular.otf'
-NotoColorEmoji = bsepth + r'typeface/NotoColorEmoji.ttf'
-CODE2000 = bsepth + r'typeface/CODE2000.ttf'
-Unifont = bsepth + r'typeface/Unifont.ttf.ttf'
-arial = bsepth + r'typeface/reserve/arial.ttf'
-himalaya = bsepth + r'typeface/reserve/himalaya.ttf'
+NotoSansCJK = f'{bsepth}typeface/NotoSansCJKsc-Regular.otf'
+NotoColorEmoji = f'{bsepth}typeface/NotoColorEmoji.ttf'
+CODE2000 = f'{bsepth}typeface/CODE2000.ttf'
+Unifont = f'{bsepth}typeface/Unifont.ttf.ttf'
+arial = f'{bsepth}typeface/reserve/arial.ttf'
+himalaya = f'{bsepth}typeface/reserve/himalaya.ttf'
 
 
 muniMap = TTFont(NotoSansCJK)['cmap'].tables[0].ttFont.getBestCmap()
@@ -32,10 +33,8 @@ cuniMap = TTFont(CODE2000)['cmap'].tables[0].ttFont.getBestCmap()
 
 # tfl = [[f.fname, f.name, f.style] for f in fontManager.ttflist]
 # f = fontManager.ttflist
-fontList = []
+fontList = [[TTFont(arial)['cmap'].tables[0].ttFont.getBestCmap(), arial]]
 
-# 加入后备字体
-fontList.append([TTFont(arial)['cmap'].tables[0].ttFont.getBestCmap(), arial])
 fontList.append([TTFont(himalaya)['cmap'].tables[0].ttFont.getBestCmap(), himalaya])
 
 # 加入系统所有字体

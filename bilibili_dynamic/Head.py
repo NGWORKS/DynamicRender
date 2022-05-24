@@ -7,14 +7,12 @@ from .textTools import NotoSansCJK
 import os,time
 
 
-faceMark = Image.open(bsepth + 'element/hm.png')
-userauth = Image.open(bsepth + 'element/user-auth.png')
+faceMark = Image.open(f'{bsepth}element/hm.png')
+userauth = Image.open(f'{bsepth}element/user-auth.png')
 
 def headRendering(desc,cpx = 150,path = None):
     # 头像大小 边长
     fpx = int(cpx/2)
-    # 头像框图片边长
-    ppx = int((fpx/48)*82)
     # 认证、大会员图标 边长
     ico = int((fpx/48)*16)
     tmppath = set_tmp(path)
@@ -60,15 +58,11 @@ def headRendering(desc,cpx = 150,path = None):
         pendant_threading = ThreadCli(request_img,(f"{pendant.image}@180w.webp",),"pendant_threading")
         pendant_threading.start()
         pendant = False
-    
+
     # 现在线程里面正在下载 先处理文字部分
 
     # 准备渲染用户名的颜色
-    if vip.nickname_color == "":
-        nickname_color = (34, 34, 34)
-    else:
-        nickname_color = (251, 114, 153)
-
+    nickname_color = (34, 34, 34) if vip.nickname_color == "" else (251, 114, 153)
     # 创建主画布准备写字 稍后统一粘贴头像组
     main = Image.new("RGB", (cpx*3, cpx), "#FFFFFF")
     # 写昵称
@@ -113,10 +107,12 @@ def headRendering(desc,cpx = 150,path = None):
             pictmp[fm] = pendant
             pendant.save(pendantPath)
 
+        # 头像框图片边长
+        ppx = int((fpx/48)*82)
         pendant = pendant.resize((ppx, ppx), Image.ANTIALIAS).convert('RGBA')
         HeadRender.paste(pendant, (int((cpx-ppx)/2),int((cpx-ppx)/2)), mask=pendant)
 
-    if official.type != -1 or vip.vipType != 0:
+    if official.type != -1:
         # 是 大会员 或者 认证号
         if vip.vipType != 0:
             box = (69, 16, 94, 41)
@@ -128,7 +124,20 @@ def headRendering(desc,cpx = 150,path = None):
         # 根据上面的BOX剪裁
         officialimg = userauth.crop(box).resize((ico, ico), Image.ANTIALIAS).convert('RGBA')
         # 粘贴
-        HeadRender.paste(officialimg, (fpx+int(ico/2),fpx+int(ico/2)), mask=officialimg)
+        HeadRender.paste(
+            officialimg, (fpx + ico // 2, fpx + ico // 2), mask=officialimg
+        )
+
+
+    elif vip.vipType != 0:
+        box = (69, 16, 94, 41)
+        # 根据上面的BOX剪裁
+        officialimg = userauth.crop(box).resize((ico, ico), Image.ANTIALIAS).convert('RGBA')
+        # 粘贴
+        HeadRender.paste(
+            officialimg, (fpx + ico // 2, fpx + ico // 2), mask=officialimg
+        )
+
 
     main.paste(HeadRender,mask=HeadRender)
 
