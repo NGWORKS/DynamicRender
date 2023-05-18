@@ -105,11 +105,10 @@ def url_division(Text: str) -> division:
     division = []
     reg = r'https?:[0-9a-zA-Z.?#&=_@(-/\d]+'
     url = re.findall(reg, Text)
-    url = list(set(url))
-    if len(url) != 0:
+    if url := list(set(url)):
+        reg = r'(.*).bilibili.com'
         for i in url:
             n = urlparse(i).netloc
-            reg = r'(.*).bilibili.com'
             if re.match(reg, n) or n == 'b23.tv':
                 urllen = len(i)
                 worldstarList = KeyWordsCut(i, Text)
@@ -128,7 +127,7 @@ def RendingList(NGSS: List, Text: str) -> List:
         type = NGSS[count]['type']
         start = NGSS[count]['start']
         if count == 0 and NGSS[count]['start'] != 0:
-            data = {'type': -1, 'text': Text[0:NGSS[count]['start']]}
+            data = {'type': -1, 'text': Text[:NGSS[count]['start']]}
             RenderList.append(data)
 
         if type == 2 and NGSS[count]['data']['control'] != 1:
@@ -153,12 +152,10 @@ def RendingList(NGSS: List, Text: str) -> List:
             dataico = {'type': 3, 'text': "", "data": img}
             data = {'type': type, 'text': text, "data": data}
             RenderList.append(dataico)
-            RenderList.append(data)
-
         else:
             data = {'type': type, 'text': Text[NGSS[count]['start'] -
                                                pyl:NGSS[count]['end']-pyl], "data": NGSS[count]['data']}
-            RenderList.append(data)
+        RenderList.append(data)
 
         if count != len(NGSS)-1 and NGSS[count]['end'] != NGSS[count+1]['start']:
             end = NGSS[count+1]['start']
@@ -166,7 +163,7 @@ def RendingList(NGSS: List, Text: str) -> List:
             RenderList.append(data)
 
         if count == len(NGSS)-1 and NGSS[count]['end'] != len(Text):
-            data = {'type': -1, 'text': Text[NGSS[count]['end']:len(Text)]}
+            data = {'type': -1, 'text': Text[NGSS[count]['end']:]}
             RenderList.append(data)
         count += 1
     if len(NGSS) == 0:
@@ -174,23 +171,16 @@ def RendingList(NGSS: List, Text: str) -> List:
     for element in RenderList:
         type = element['type']
         text = element['text']
-        if type == -1:
-            if len(text.split('\n')) > 1:
-                element['text'] = text.split('\n')
+        if type == -1 and len(text.split('\n')) > 1:
+            element['text'] = text.split('\n')
     newlist = []
     for el in RenderList:
         type = el['type']
         text = el['text']
         if isinstance(text, list):
-            ct = 0
-            for lt in text:
-                data = {'type': type, 'text': lt}
-                if ct == 0:
-                    data['enter'] = False
-                else:
-                    data['enter'] = True
+            for ct, lt in enumerate(text):
+                data = {'type': type, 'text': lt, 'enter': ct != 0}
                 newlist.append(data)
-                ct += 1
         else:
             el['enter'] = False
             newlist.append(el)
@@ -229,7 +219,7 @@ def tap(RenderList,
                 if text in ['\u200d', '\u200b', '\r', '\n']:
                     # 这里杀掉一些常见的奇怪的东西
                     continue
-                
+
                 # 判断目前写的长度有没有接近最大极限 
                 # 也判断这一部分要不要另起一行 之前有判断 \n 的
                 if START_X >= LINE_LIMT or element['enter']:
@@ -237,15 +227,11 @@ def tap(RenderList,
                     START_X = 0
                     # 另起一行 y
                     START_Y += FOUNT_SIZE + LINE_HIGHT
-                    if element['enter']:
-                        # 避免反复换行 拨回去
-                        element['enter'] = False
+                if element['enter']:
+                    # 避免反复换行 拨回去
+                    element['enter'] = False
 
-                if type == -1:
-                    c = FountColor
-                else:
-                    c = HightLightFountColor
-
+                c = FountColor if type == -1 else HightLightFountColor
                 if ord(text) in muniMap.keys():
                     f = MainFontPath
                     # 主要性能损失（wtm这里一个字一个字跑，很讨厌）
@@ -297,11 +283,8 @@ def tr(card, display,
         task.join()
     division = tasks[0].getResult() + tasks[1].getResult() + \
         tasks[2].getResult()
-    indexdict = {}
-    for element in division:
-        indexdict[element['start']] = element
-    items = list(indexdict.items())
-    items.sort()
+    indexdict = {element['start']: element for element in division}
+    items = sorted(indexdict.items())
     NGSS = [value for key, value in items]
     RenderList = RendingList(NGSS, Text)
     print(Text)

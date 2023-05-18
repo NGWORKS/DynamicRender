@@ -42,5 +42,4 @@ def request_img(url):
     response = requests.get(url)
     # 获取的文本实际上是图片的二进制文本
     img = BytesIO(response.content)
-    pic = Image.open(img)
-    return pic
+    return Image.open(img)
